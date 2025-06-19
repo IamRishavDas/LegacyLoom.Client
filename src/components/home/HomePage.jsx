@@ -8,7 +8,7 @@ const HomePage = () => {
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <SnowflakeAnimation 
           {...SnowflakePresets.subtle}
-          zIndex={50}
+          zIndex={0}
       />
       <HomeNav/>
       <HomeContent/>

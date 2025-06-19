@@ -95,7 +95,7 @@ export const SnowflakePresets = {
     minSize: 0.3,
     maxSize: 1,
     minDuration: 5,
-    maxDuration: 12,
+    maxDuration: 10,
   },
   
   // More visible for 404 page
