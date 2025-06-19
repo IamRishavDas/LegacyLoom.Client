@@ -16,7 +16,7 @@ export default function HomeContent() {
         <section ref={heroRef} className="pt-28 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex">
 
             {/* Background Image with Cut Paper Effect */}
-            <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 pointer-events-none z-10">
                 <div 
                     className="absolute top-16 right-0 w-96 h-80 opacity-100 transform rotate-12"
                     style={{
@@ -53,13 +53,13 @@ export default function HomeContent() {
             </div>
 
             {/* Original gradient blobs */}
-            <div className="absolute inset-0 pointer-events-none z-1">
+            <div className="absolute inset-0 pointer-events-none z-20">
                 <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/20 to-slate-300/15 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute top-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/15 to-slate-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
                 <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-gradient-to-br from-stone-200/18 to-slate-300/12 rounded-full blur-3xl animate-pulse delay-2000"></div>
             </div>
             
-            <div className="max-w-7xl mx-auto relative z-10">
+            <div className="max-w-7xl mx-auto relative z-30">
                 <div className="text-center">
 
                     <div className={`transition-all duration-1200 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>

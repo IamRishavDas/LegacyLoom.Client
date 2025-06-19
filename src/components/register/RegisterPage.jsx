@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Login } from "../../apis/apicalls/apicalls";
+import { Register } from "../../apis/apicalls/apicalls";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingOverlay from "../loading-overlay/LoadingOverlay";
 import { toast } from "react-toastify";
@@ -110,7 +110,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await Login(formData.username, formData.email, formData.password);
+      const response = await Register(formData.username, formData.email, formData.password);
       const data = await response.json();
 
       if (data.success) {
@@ -120,7 +120,7 @@ export default function RegisterPage() {
         navigate("/user-login");
       } else {
         setIsLoading(false);
-        toast.error(data.errorMessage, "");
+        toast.error(data.errorMessage);
       }
     } catch (error) {
       setIsLoading(false);
@@ -289,7 +289,7 @@ export default function RegisterPage() {
         isVisible={isLoading}
         message="Creating Account"
         submessage="Please wait while we set up your Legacy Loom profile"
-        variant="stone"
+        variant="slate"
         size="medium"
         showDots={true}
       />

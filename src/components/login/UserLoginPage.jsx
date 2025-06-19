@@ -1,9 +1,12 @@
-import { Pointer } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import HomeNav from '../home/HomeNav';
+import { LoginUsingEmail, LoginUsingUsername } from '../../apis/apicalls/apicalls';
+import { toast } from 'react-toastify';
+import LoadingOverlay from '../loading-overlay/LoadingOverlay';
 
 export default function UserLoginPage() {
+    const navigate = useNavigate();
     const formRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +82,6 @@ export default function UserLoginPage() {
     };
 
     const handleSubmit = async () => {
-        // Validate based on login type
         let identifierError = '';
         let passwordError = validatePassword(formData.password);
         
@@ -97,7 +99,6 @@ export default function UserLoginPage() {
         setErrors(newErrors);
         setTouched({ [loginType]: true, password: true });
         
-        // Check if there are any errors
         if (identifierError || passwordError) {
             return;
         }
@@ -107,33 +108,21 @@ export default function UserLoginPage() {
         setIsLoading(true);
         
         try {
-            // Different API endpoints based on login type
-            const endpoint = loginType === 'username' ? '' : ''; // Replace with your actual endpoints
-            const payload = loginType === 'username' 
-                ? { username: formData.username, password: formData.password }
-                : { email: formData.email, password: formData.password };
-            
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Login successful!', data);
-                // Handle successful login (store token, redirect, etc.)
+            const response = loginType === 'username' ? await LoginUsingUsername(formData.username, formData.password)
+                : await LoginUsingEmail(formData.email, formData.password);
+            const data = await response.json();
+
+            if (data.success) {
+                setIsLoading(false);
+                toast.success("Login successfull");
+                navigate("/dashboard");
             } else {
-                // Handle API errors
-                const errorData = await response.json();
-                console.error('Login failed:', errorData);
-                // You might want to show error message to user
+                setIsLoading(false);
+                toast.error(data.errorMessage);
             }
         } catch (error) {
-            console.error('Network error:', error);
-            // Handle network errors
+            setIsLoading(false);
+            toast.error("Network error: Please check your network connection or try again later");
         } finally {
             setIsLoading(false);
         }
@@ -285,6 +274,14 @@ export default function UserLoginPage() {
                     </div>
                 </div>
             </div>
+            <LoadingOverlay
+                    isVisible={isLoading}
+                    message="Verifying"
+                    submessage="Please wait while we verify your credentials"
+                    variant="slate"
+                    size="medium"
+                    showDots={true}
+                  />
         </section>
     );
 }
