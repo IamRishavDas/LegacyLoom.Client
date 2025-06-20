@@ -81,6 +81,13 @@ export default function UserLoginPage() {
         setTouched({});
     };
 
+    const saveCredentialsToLocalStorage = (data) => {
+        localStorage.setItem("userId", data.id);
+        localStorage.setItem("userName", data.userName);
+        localStorage.setItem("email", data.email);
+        localStorage.setItem("token", data.token);
+    }
+
     const handleSubmit = async () => {
         let identifierError = '';
         let passwordError = validatePassword(formData.password);
@@ -115,6 +122,7 @@ export default function UserLoginPage() {
             if (data.success) {
                 setIsLoading(false);
                 toast.success("Login successfull");
+                saveCredentialsToLocalStorage(data.data);
                 navigate("/dashboard");
             } else {
                 setIsLoading(false);

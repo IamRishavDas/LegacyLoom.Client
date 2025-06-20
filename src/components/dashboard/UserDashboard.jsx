@@ -1,8 +1,9 @@
+import DashboardHome from "./DashboardHome";
 
 export default function UserDashboard() {
   return (
     <div>
-      This is user Dashboard
+      <DashboardHome/>
     </div>
   )
 }

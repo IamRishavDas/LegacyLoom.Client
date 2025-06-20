@@ -1,0 +1,117 @@
+import { useState } from 'react';
+import { Home, Users, Plus, LogOut, Menu, X, Snowflake } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+export default function DashboardNavbar() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    
+    // Generate a random profile picture using random avatar services
+    const avatarServices = [
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+    ];
+    
+    const profileImage = avatarServices[0];
+
+    const navItems = [
+        { icon: Home, label: 'Home', active: true },
+        { icon: Users, label: 'Timeline', active: false },
+        { icon: Plus, label: 'Create', active: false }
+    ];
+
+    return (
+        <nav className="bg-white/90 backdrop-blur-sm border-b border-stone-200/50 sticky top-0 z-50 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16">
+                    
+                    {/* Logo */}
+                    <div className="flex items-center space-x-3">
+                        <Link to={"/"}>
+                            <div className="w-10 h-10 bg-gradient-to-br from-stone-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
+                                <Snowflake className="w-5 h-5 text-stone-100" />
+                            </div>
+                        </Link>
+                        <span className="text-xl font-serif font-semibold text-stone-800">Legacy Loom</span>
+                    </div>
+
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center space-x-1">
+                        {navItems.map((item, index) => (
+                            <button
+                                key={index}
+                                style={{cursor: "pointer"}}
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                                    item.active 
+                                        ? 'bg-stone-100 text-stone-800 shadow-sm' 
+                                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                                }`}
+                            >
+                                <item.icon size={18} />
+                                <span className="font-medium">{item.label}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Profile and Logout */}
+                    <div className="hidden md:flex items-center space-x-3">
+                        <img 
+                            src={profileImage}
+                            alt="Profile"
+                            className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white"
+                        />
+                        <button className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer">
+                            <LogOut size={18} />
+                            <span className="font-medium">Logout</span>
+                        </button>
+                    </div>
+
+                    {/* Mobile menu button */}
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="md:hidden p-2 rounded-lg text-stone-600 hover:bg-stone-50 transition-colors duration-200"
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
+
+                {/* Mobile Navigation */}
+                {isMenuOpen && (
+                    <div className="md:hidden py-4 border-t border-stone-200/50 bg-white/95 backdrop-blur-sm">
+                        <div className="flex flex-col space-y-2">
+                            
+                            {/* Profile section */}
+                            <div className="flex items-center space-x-3 px-4 py-3 mb-2">
+                                <img 
+                                    src={profileImage}
+                                    alt="Profile"
+                                    className="w-10 h-10 rounded-full object-cover shadow-sm border-2 border-white"
+                                />
+                                <span className="text-stone-700 font-medium">Welcome back!</span>
+                            </div>
+                            
+                            {/* Navigation items */}
+                            {navItems.map((item, index) => (
+                                <button
+                                    key={index}
+                                    className={`flex items-center space-x-3 px-4 py-3 mx-2 rounded-lg transition-all duration-200 ${
+                                        item.active 
+                                            ? 'bg-stone-100 text-stone-800' 
+                                            : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                                    }`}
+                                >
+                                    <item.icon size={20} />
+                                    <span className="font-medium">{item.label}</span>
+                                </button>
+                            ))}
+                            
+                            {/* Logout */}
+                            <button className="flex items-center space-x-3 px-4 py-3 mx-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200">
+                                <LogOut size={20} />
+                                <span className="font-medium">Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </nav>
+    );
+}
