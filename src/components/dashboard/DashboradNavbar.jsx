@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Home, Users, Plus, LogOut, Menu, X, Snowflake } from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
+import LogoutConfirmationModal from '../modals/LogoutConfirmationModal';
 
 export default function DashboardNavbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
     
     // Generate a random profile picture using random avatar services
@@ -73,7 +75,7 @@ export default function DashboardNavbar() {
                             />
                         </Link>
                         <button className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer"
-                                onClick={() => logout()}>
+                                onClick={() =>  setShowLogoutModal(true)}>
                             <LogOut size={18} />
                             <span className="font-medium">Logout</span>
                         </button>
@@ -120,7 +122,7 @@ export default function DashboardNavbar() {
                             
                             {/* Logout */}
                             <button className="flex items-center space-x-3 px-4 py-3 mx-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200"
-                                    onClick={() => logout()}>
+                                    onClick={() => setShowLogoutModal(true)}>
                                 <LogOut size={20} />
                                 <span className="font-medium">Logout</span>
                             </button>
@@ -132,6 +134,13 @@ export default function DashboardNavbar() {
         <main>
             <Outlet/>
         </main>
+        <LogoutConfirmationModal 
+            isOpen={showLogoutModal}
+            onClose={() => setShowLogoutModal(false)}
+            onConfirm={() => {
+                setShowLogoutModal(false);
+                logout();
+            }}/>
         </>
     );
 }
