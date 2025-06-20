@@ -10,7 +10,6 @@ const HomePage = () => {
           {...SnowflakePresets.subtle}
           zIndex={0}
       />
-      <HomeNav/>
       <HomeContent/>
     </div>
   );

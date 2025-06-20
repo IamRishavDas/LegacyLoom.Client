@@ -4,7 +4,6 @@ import StoryCard from './StoryCard';
 export default function DashboardHome() {
     return (
         <>
-        <DashboardNavbar/>
         <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
             
             {/* Subtle background elements */}

@@ -138,7 +138,6 @@ export default function UserLoginPage() {
 
     return (
         <section ref={formRef} className="h-screen pt-0 pb-0 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center">
-            <HomeNav/>
             {/* Background decorative elements */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/30 to-slate-300/20 rounded-full blur-3xl animate-pulse"></div>

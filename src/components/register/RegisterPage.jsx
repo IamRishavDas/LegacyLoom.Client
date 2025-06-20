@@ -135,7 +135,6 @@ export default function RegisterPage() {
       ref={formRef}
       className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative bg-stone-100"
     >
-      <HomeNav/>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/30 to-slate-300/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute top-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/20 to-slate-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>

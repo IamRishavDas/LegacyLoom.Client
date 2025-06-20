@@ -80,7 +80,7 @@ function StoryCard() {
       content:
         "Grandfather's tools still hang in perfect order, each one worn smooth by decades of creation. Today I picked up his favorite chisel, and for a moment, I could hear the workshop's gentle song of wood shavings and quiet concentration.",
       image:
-        "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1551868561-f2cdee310ecf?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       location: "Grandfather's Workshop, Maine",
       timeAgo: "2 days ago",
       likes: 15,
