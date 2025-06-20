@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Home, Users, Plus, LogOut, Menu, X, Snowflake } from 'lucide-react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 
 export default function DashboardNavbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
     
     // Generate a random profile picture using random avatar services
     const avatarServices = [
@@ -13,10 +14,18 @@ export default function DashboardNavbar() {
     const profileImage = avatarServices[0];
 
     const navItems = [
-        { icon: Home, label: 'Home', active: true, link: '/dashboard' },
+        { icon: Home, label: 'Home', active: false, link: '/dashboard' },
         { icon: Users, label: 'Timeline', active: false, link: '/not-found' },
         { icon: Plus, label: 'Create', active: false, link: '/timeline-editor' }
     ];
+
+    const logout = () => {
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("email");
+        localStorage.removeItem("token");
+        navigate("/");
+    }
 
     return (
         <>
@@ -56,12 +65,15 @@ export default function DashboardNavbar() {
 
                     {/* Profile and Logout */}
                     <div className="hidden md:flex items-center space-x-3">
-                        <img 
-                            src={profileImage}
-                            alt="Profile"
-                            className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white"
-                        />
-                        <button className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer">
+                        <Link to={"/not-authorized"}>
+                            <img 
+                                src={profileImage}
+                                alt="Profile"
+                                className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white"
+                            />
+                        </Link>
+                        <button className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer"
+                                onClick={() => logout()}>
                             <LogOut size={18} />
                             <span className="font-medium">Logout</span>
                         </button>
@@ -107,7 +119,8 @@ export default function DashboardNavbar() {
                             ))}
                             
                             {/* Logout */}
-                            <button className="flex items-center space-x-3 px-4 py-3 mx-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200">
+                            <button className="flex items-center space-x-3 px-4 py-3 mx-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200"
+                                    onClick={() => logout()}>
                                 <LogOut size={20} />
                                 <span className="font-medium">Logout</span>
                             </button>

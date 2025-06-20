@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
-import { Save, Eye, EyeOff, FileText } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { Save, Eye, EyeOff, FileText, Image, Upload, FolderOpen } from 'lucide-react';
 
 const Editor = () => {
+  const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [images, setImages] = useState({}); // Store images with unique IDs
+  const fileInputRef = useRef(null);
+  const loadFileInputRef = useRef(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -13,9 +17,55 @@ const Editor = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Simple rich text editor implementation (since ReactQuill isn't available)
   const handleChange = (e) => {
     setValue(e.target.value);
+  };
+
+  const handleTitleChange = (e) => {
+    setTitle(e.target.value);
+  };
+
+  const generateImageId = () => {
+    return 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        const imageId = generateImageId();
+        
+        reader.onload = (event) => {
+          const imageData = event.target.result;
+          
+          // Store image data
+          setImages(prev => ({
+            ...prev,
+            [imageId]: {
+              name: file.name,
+              data: imageData,
+              size: file.size
+            }
+          }));
+
+          // Insert image placeholder at cursor position
+          const textarea = document.getElementById('editor-textarea');
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const imageMarkdown = `\n![${file.name}](${imageId})\n`;
+          
+          const newValue = value.substring(0, start) + imageMarkdown + value.substring(end);
+          setValue(newValue);
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Clear the input
+    e.target.value = '';
   };
 
   const insertFormatting = (tag) => {
@@ -47,18 +97,90 @@ const Editor = () => {
   };
 
   const renderPreview = (text) => {
-    return text
+    let rendered = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-serif font-bold text-stone-800 mb-4">$1</h1>')
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-serif font-semibold text-stone-800 mb-3">$1</h2>')
-      .replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-stone-300 pl-4 italic text-stone-600 my-4">$1</blockquote>')
-      .replace(/\n/g, '<br>');
+      .replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-stone-300 pl-4 italic text-stone-600 my-4">$1</blockquote>');
+
+    // Replace image placeholders with actual images
+    rendered = rendered.replace(/!\[(.*?)\]\((img_[^)]+)\)/g, (match, alt, imageId) => {
+      const imageData = images[imageId];
+      if (imageData) {
+        return `<div class="my-4"><img src="${imageData.data}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md" /><p class="text-sm text-stone-500 mt-2 italic">${alt}</p></div>`;
+      }
+      return `<div class="my-4 p-4 border-2 border-dashed border-stone-300 rounded-lg text-center text-stone-500">Image: ${alt}</div>`;
+    });
+
+    return rendered.replace(/\n/g, '<br>');
   };
+
+  const saveStory = () => {
+    const storyData = {
+      title: title,
+      content: value,
+      images: images,
+      createdAt: new Date().toISOString(),
+      wordCount: value.split(/\s+/).filter(word => word.length > 0).length
+    };
+
+    const dataStr = JSON.stringify(storyData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `${title || 'my-story'}.story.json`;
+    link.click();
+    
+    URL.revokeObjectURL(link.href);
+  };
+
+  const loadStory = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const storyData = JSON.parse(event.target.result);
+          setTitle(storyData.title || '');
+          setValue(storyData.content || '');
+          setImages(storyData.images || {});
+        } catch (error) {
+          alert('Error loading story file. Please make sure it\'s a valid story file.');
+          console.error('Error parsing story file:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+    
+    // Clear the input
+    e.target.value = '';
+  };
+
+  const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
+  const imageCount = Object.keys(images).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
       
+      {/* Hidden file inputs */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        multiple
+        style={{ display: 'none' }}
+      />
+      <input
+        type="file"
+        ref={loadFileInputRef}
+        onChange={loadStory}
+        accept=".json,.story.json"
+        style={{ display: 'none' }}
+      />
+
       {/* Subtle background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/20 to-slate-300/15 rounded-full blur-3xl animate-pulse"></div>
@@ -115,9 +237,23 @@ const Editor = () => {
                   >
                     " "
                   </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center space-x-1 px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 text-sm"
+                  >
+                    <Image size={14} />
+                    <span>Image</span>
+                  </button>
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => loadFileInputRef.current?.click()}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 hover:text-stone-900 rounded-lg transition-all duration-200 text-sm font-medium"
+                  >
+                    <FolderOpen size={16} />
+                    <span className="hidden sm:inline">Load Story</span>
+                  </button>
                   <button
                     onClick={() => setShowPreview(!showPreview)}
                     className="flex items-center space-x-2 px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
@@ -125,7 +261,10 @@ const Editor = () => {
                     {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
                     <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
                   </button>
-                  <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg">
+                  <button 
+                    onClick={saveStory}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg"
+                  >
                     <Save size={16} />
                     <span className="hidden sm:inline">Save Story</span>
                   </button>
@@ -141,6 +280,8 @@ const Editor = () => {
                 <div className="mb-4">
                   <input
                     type="text"
+                    value={title}
+                    onChange={handleTitleChange}
                     placeholder="Give your story a beautiful title..."
                     className="w-full text-2xl font-serif font-bold text-stone-800 placeholder-stone-400 bg-transparent border-none outline-none focus:ring-0"
                   />
@@ -157,7 +298,9 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
 **bold text**
 *italic text*  
 # Headings
-> Quotes"
+> Quotes
+
+*Add images by clicking the Image button in the toolbar*"
                   className="w-full h-96 md:h-[500px] text-stone-700 placeholder-stone-400 bg-transparent border-none outline-none resize-none focus:ring-0 leading-relaxed text-base"
                   style={{ fontFamily: 'inherit' }}
                 />
@@ -171,9 +314,16 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
                       <Eye size={20} />
                       <span>Live Preview</span>
                     </h3>
+                    <div className="mb-4">
+                      {title && (
+                        <h1 className="text-3xl font-serif font-bold text-stone-800 mb-6">{title}</h1>
+                      )}
+                    </div>
                     <div 
                       className="prose prose-stone max-w-none text-stone-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: renderPreview(value) || '<p class="text-stone-400 italic">Your story will appear here as you write...</p>' }}
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderPreview(value) || '<p class="text-stone-400 italic">Your story will appear here as you write...</p>' 
+                      }}
                     />
                   </div>
                 </div>
@@ -184,12 +334,14 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
             <div className="border-t border-stone-200/50 bg-stone-50/50 px-6 py-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="text-sm text-stone-500">
-                  <span className="font-medium">{value.length}</span> characters • Last saved: Never
+                  <span className="font-medium">{value.length}</span> characters • 
+                  <span className="font-medium"> {wordCount}</span> words • 
+                  <span className="font-medium"> {imageCount}</span> images
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-stone-500">
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span>Auto-saving...</span>
+                    <span>Ready to save</span>
                   </div>
                 </div>
               </div>
@@ -206,10 +358,10 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
                 <strong className="text-stone-700">Be Authentic:</strong> Write in your own voice, let your personality shine through every word.
               </div>
               <div>
-                <strong className="text-stone-700">Include Details:</strong> Small moments and sensory details make stories come alive.
+                <strong className="text-stone-700">Include Images:</strong> Add photos to bring your memories to life and create visual storytelling.
               </div>
               <div>
-                <strong className="text-stone-700">Write for Tomorrow:</strong> Imagine someone reading this years from now - what would they want to know?
+                <strong className="text-stone-700">Save & Share:</strong> Your stories are saved as portable files that can be opened and edited anytime.
               </div>
             </div>
           </div>

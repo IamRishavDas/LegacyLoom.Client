@@ -7,6 +7,7 @@ import NotFound from '../components/not-found/NotFound'
 import Editor from '../components/dashboard/editor/Editor'
 import DashboardNavbar from '../components/dashboard/DashboradNavbar'
 import HomeNav from '../components/home/HomeNav'
+import UnauthorizedPage from '../components/not-authenticated/UnauthorizedPage'
 
 function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ function AppRoutes() {
             <Route path='/timeline-editor' element={<Editor/>}/>
           </Route>
           <Route path='/not-found' element={<NotFound/>}/>
+          <Route path='/not-authorized' element={<UnauthorizedPage/>}/>
           <Route path='*' element={<NotFound/>}/>
       </Routes>
     </BrowserRouter>
