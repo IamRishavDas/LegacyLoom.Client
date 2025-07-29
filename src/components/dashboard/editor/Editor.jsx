@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Eye, EyeOff, FileText, Image, Upload, FolderOpen } from 'lucide-react';
+import { Save, Eye, EyeOff, FileText, Image, Upload, FolderOpen, X } from 'lucide-react';
 import { CreateTimeline } from "../../../apis/apicalls/apicalls";
 import { toast } from "react-toastify";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
@@ -13,12 +13,8 @@ const Editor = () => {
   const [images, setImages] = useState({}); // Store images with unique IDs
   const [imageFiles, setImageFiles] = useState([]); // Store actual File objects for API
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState("");
   const fileInputRef = useRef(null);
   const loadFileInputRef = useRef(null);
-
-  // API endpoint - update this to match your actual API URL
-  const API_ENDPOINT = "/api/timeline"; // Update this to your actual endpoint
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -62,15 +58,6 @@ const Editor = () => {
 
           // Store actual file for API submission
           setImageFiles(prev => [...prev, { id: imageId, file: file }]);
-
-          // Insert image placeholder at cursor position
-          const textarea = document.getElementById('editor-textarea');
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const imageMarkdown = `\n![${file.name}](${imageId})\n`;
-          
-          const newValue = value.substring(0, start) + imageMarkdown + value.substring(end);
-          setValue(newValue);
         };
         
         reader.readAsDataURL(file);
@@ -79,6 +66,18 @@ const Editor = () => {
     
     // Clear the input
     e.target.value = '';
+  };
+
+  const removeImage = (imageId) => {
+    // Remove from images state
+    setImages(prev => {
+      const newImages = { ...prev };
+      delete newImages[imageId];
+      return newImages;
+    });
+
+    // Remove from imageFiles state
+    setImageFiles(prev => prev.filter(imageFile => imageFile.id !== imageId));
   };
 
   const insertFormatting = (tag) => {
@@ -117,15 +116,6 @@ const Editor = () => {
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-serif font-semibold text-stone-800 mb-3">$1</h2>')
       .replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-stone-300 pl-4 italic text-stone-600 my-4">$1</blockquote>');
 
-    // Replace image placeholders with actual images
-    rendered = rendered.replace(/!\[(.*?)\]\((img_[^)]+)\)/g, (match, alt, imageId) => {
-      const imageData = images[imageId];
-      if (imageData) {
-        return `<div class="my-4"><img src="${imageData.data}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md" /><p class="text-sm text-stone-500 mt-2 italic">${alt}</p></div>`;
-      }
-      return `<div class="my-4 p-4 border-2 border-dashed border-stone-300 rounded-lg text-center text-stone-500">Image: ${alt}</div>`;
-    });
-
     return rendered.replace(/\n/g, '<br>');
   };
 
@@ -149,17 +139,15 @@ const Editor = () => {
   };
 
   const submitStory = async () => {
-
     if(isLoading) return;
 
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
-      setSubmitMessage(`Validation errors: ${validationErrors.join(', ')}`);
+      toast.error(`${validationErrors.join(', ')}`);
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitMessage("");
 
     try {
       // Create FormData object
@@ -168,14 +156,7 @@ const Editor = () => {
       // Calculate word count
       const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
       
-      // Create the story object and append as JSON
-      const storyData = {
-        Title: title,
-        Content: value,
-        WordCount: wordCount
-      };
-      
-      // Append story data as JSON string
+      // Append story data
       formData.append('Story.Title', title);
       formData.append('Story.Content', value);
       formData.append('Story.WordCount', wordCount.toString());
@@ -185,44 +166,26 @@ const Editor = () => {
         formData.append('Files', imageFile.file);
       });
 
-
       setIsLoading(true);
 
       const authToken = localStorage.getItem("token");
       const response = await CreateTimeline(formData, authToken);
-    
+      const data = await response.json();
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result);
-
-        if(result.success){
-          setIsLoading(false);
-          toast.success("Story saved successfully!");
-        } else {
-          setIsLoading(false);
-          toast.error(result.errorMessage);
-        }
-        
-        // Optional: Clear form after successful submission
-        // setTitle("");
-        // setValue("");
-        // setImages({});
-        // setImageFiles([]);
-      } else {
+      if(data.success){
         setIsLoading(false);
-        toast.error("Network error: Please check your network connection or try again later");
+        toast.success("Story saved successfully!");
+      } else {
+
       }
+      
+      
     } catch (error) {
       setIsLoading(false);
       toast.error("Network error: Please check your network connection or try again later");
     } finally {
+      setIsLoading(false);
       setIsSubmitting(false);
-      
-      // Clear message after 5 seconds
-      setTimeout(() => {
-        setSubmitMessage("");
-      }, 5000);
     }
   };
 
@@ -256,13 +219,6 @@ const Editor = () => {
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-stone-400 to-slate-400 mx-auto mt-4 rounded-full"></div>
         </div>
-
-        {/* Submit Message */}
-        {submitMessage && (
-          <div className={`mb-4 p-4 rounded-lg text-center ${submitMessage.includes('successfully') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-            {submitMessage}
-          </div>
-        )}
 
         {/* Editor Container */}
         <div className={`transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
@@ -303,6 +259,14 @@ const Editor = () => {
                     <Image size={14} />
                     <span>Image</span>
                   </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -363,6 +327,38 @@ Minimum 100 characters and 10 words required."
                   className="w-full h-96 md:h-[500px] text-stone-700 placeholder-stone-400 bg-transparent border-none outline-none resize-none focus:ring-0 leading-relaxed text-base"
                   style={{ fontFamily: 'inherit' }}
                 />
+
+                {/* Image Previews Section */}
+                {imageCount > 0 && (
+                  <div className="mt-6 pt-6 border-t border-stone-200/50">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Image size={18} className="text-stone-600" />
+                      <h4 className="font-serif font-semibold text-stone-800">Attached Images ({imageCount})</h4>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {Object.entries(images).map(([imageId, imageData]) => (
+                        <div key={imageId} className="relative group">
+                          <div className="aspect-square rounded-lg overflow-hidden bg-stone-100 border-2 border-stone-200/50 shadow-sm">
+                            <img
+                              src={imageData.data}
+                              alt={imageData.name}
+                              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            />
+                          </div>
+                          <button
+                            onClick={() => removeImage(imageId)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                          >
+                            <X size={12} />
+                          </button>
+                          <p className="text-xs text-stone-500 mt-2 truncate text-center" title={imageData.name}>
+                            {imageData.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Preview */}
@@ -384,6 +380,27 @@ Minimum 100 characters and 10 words required."
                         __html: renderPreview(value) || '<p class="text-stone-400 italic">Your story will appear here as you write...</p>' 
                       }}
                     />
+                    
+                    {/* Preview Images */}
+                    {imageCount > 0 && (
+                      <div className="mt-8 pt-6 border-t border-stone-300/50">
+                        <h4 className="font-serif font-semibold text-stone-800 mb-4 flex items-center space-x-2">
+                          <Image size={18} />
+                          <span>Images in this story</span>
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {Object.entries(images).map(([imageId, imageData]) => (
+                            <div key={imageId} className="rounded-lg overflow-hidden shadow-md">
+                              <img
+                                src={imageData.data}
+                                alt={imageData.name}
+                                className="w-full aspect-video object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -427,6 +444,8 @@ Minimum 100 characters and 10 words required."
         </div>
       </div>
       </div>
+
+      {/* Loading Overlay Simulation */}
       <LoadingOverlay
         isVisible={isLoading}
         message="Uploading timeline"

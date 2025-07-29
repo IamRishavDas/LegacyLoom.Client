@@ -19,7 +19,7 @@ export const LoginUsingUsername = async (username, password) => {
   const response = await fetch(`${URLS.LOGIN_USERNAME}`,{
     method: "POST",
     headers: {
-          "Content-Type": "application/json",
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       username: username,
@@ -33,7 +33,7 @@ export const LoginUsingEmail = async (email, password) => {
   const response = await fetch(`${URLS.LOGIN_EMAIL}`,{
     method: "POST",
     headers: {
-          "Content-Type": "application/json",
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       email: email,
@@ -51,6 +51,17 @@ export const CreateTimeline = async (formData, authToken) => {
     },
     body: formData,
     // Don't set Content-Type header, let browser set it with boundary for FormData
+  });
+  return response;
+}
+
+export const GetMyTimelines = async (authToken, paginationProperties) => {
+  const response = await fetch(`${URLS.GET_MY_TIMELINES(paginationProperties.pageNumber, paginationProperties.pageSize, paginationProperties.orderBy)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
   });
   return response;
 }
