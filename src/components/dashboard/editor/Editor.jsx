@@ -226,73 +226,12 @@ const Editor = () => {
     }
   };
 
-  const saveStory = () => {
-    const storyData = {
-      title: title,
-      content: value,
-      images: images,
-      createdAt: new Date().toISOString(),
-      wordCount: value.split(/\s+/).filter(word => word.length > 0).length
-    };
-
-    const dataStr = JSON.stringify(storyData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(dataBlob);
-    link.download = `${title || 'my-story'}.story.json`;
-    link.click();
-    
-    URL.revokeObjectURL(link.href);
-  };
-
-  const loadStory = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const storyData = JSON.parse(event.target.result);
-          setTitle(storyData.title || '');
-          setValue(storyData.content || '');
-          setImages(storyData.images || {});
-          // Note: loaded stories won't have actual files for API submission
-          setImageFiles([]);
-        } catch (error) {
-          alert('Error loading story file. Please make sure it\'s a valid story file.');
-          console.error('Error parsing story file:', error);
-        }
-      };
-      reader.readAsText(file);
-    }
-    
-    // Clear the input
-    e.target.value = '';
-  };
-
   const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
   const imageCount = Object.keys(images).length;
 
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
-      
-      {/* Hidden file inputs */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImageUpload}
-        accept="image/*"
-        multiple
-        style={{ display: 'none' }}
-      />
-      <input
-        type="file"
-        ref={loadFileInputRef}
-        onChange={loadStory}
-        accept=".json,.story.json"
-        style={{ display: 'none' }}
-      />
 
       {/* Subtle background elements */}
       <div className="absolute inset-0 pointer-events-none">
@@ -367,13 +306,6 @@ const Editor = () => {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  {/* <button
-                    onClick={() => loadFileInputRef.current?.click()}
-                    className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 hover:text-stone-900 rounded-lg transition-all duration-200 text-sm font-medium"
-                  >
-                    <FolderOpen size={16} />
-                    <span className="hidden sm:inline">Load Story</span>
-                  </button> */}
                   <button
                     onClick={() => setShowPreview(!showPreview)}
                     className="flex items-center space-x-2 px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
@@ -381,13 +313,7 @@ const Editor = () => {
                     {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
                     <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
                   </button>
-                  {/* <button 
-                    onClick={saveStory}
-                    className="flex items-center space-x-2 px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                  >
-                    <Save size={16} />
-                    <span className="hidden sm:inline">Save Local</span>
-                  </button> */}
+
                   <button 
                     onClick={submitStory}
                     disabled={isSubmitting}
