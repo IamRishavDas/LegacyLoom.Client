@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import HomeNav from '../home/HomeNav';
 import { LoginUsingEmail, LoginUsingUsername } from '../../apis/apicalls/apicalls';
 import { toast } from 'react-toastify';
 import LoadingOverlay from '../loading-overlay/LoadingOverlay';

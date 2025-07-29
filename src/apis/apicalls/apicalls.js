@@ -43,3 +43,15 @@ export const LoginUsingEmail = async (email, password) => {
   return response;
 }
 
+export const CreateTimeline = async (formData, authToken) => {
+  const response = await fetch(`${URLS.CREATE_TIMELINE}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+    body: formData,
+    // Don't set Content-Type header, let browser set it with boundary for FormData
+  });
+  return response;
+}
+

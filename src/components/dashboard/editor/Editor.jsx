@@ -1,14 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Eye, EyeOff, FileText, Image, Upload, FolderOpen } from 'lucide-react';
+import { CreateTimeline } from "../../../apis/apicalls/apicalls";
+import { toast } from "react-toastify";
+import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
 
 const Editor = () => {
   const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [images, setImages] = useState({}); // Store images with unique IDs
+  const [imageFiles, setImageFiles] = useState([]); // Store actual File objects for API
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
   const fileInputRef = useRef(null);
   const loadFileInputRef = useRef(null);
+
+  // API endpoint - update this to match your actual API URL
+  const API_ENDPOINT = "/api/timeline"; // Update this to your actual endpoint
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -40,7 +50,7 @@ const Editor = () => {
         reader.onload = (event) => {
           const imageData = event.target.result;
           
-          // Store image data
+          // Store image data for preview
           setImages(prev => ({
             ...prev,
             [imageId]: {
@@ -49,6 +59,9 @@ const Editor = () => {
               size: file.size
             }
           }));
+
+          // Store actual file for API submission
+          setImageFiles(prev => [...prev, { id: imageId, file: file }]);
 
           // Insert image placeholder at cursor position
           const textarea = document.getElementById('editor-textarea');
@@ -116,6 +129,103 @@ const Editor = () => {
     return rendered.replace(/\n/g, '<br>');
   };
 
+  const validateForm = () => {
+    const errors = [];
+    
+    if (!title || title.length < 15 || title.length > 50) {
+      errors.push("Title should be between 15-50 characters");
+    }
+    
+    if (!value || value.length < 100) {
+      errors.push("Content should be at least 100 characters");
+    }
+    
+    const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
+    if (wordCount < 10) {
+      errors.push("Content should have at least 10 words");
+    }
+    
+    return errors;
+  };
+
+  const submitStory = async () => {
+
+    if(isLoading) return;
+
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      setSubmitMessage(`Validation errors: ${validationErrors.join(', ')}`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitMessage("");
+
+    try {
+      // Create FormData object
+      const formData = new FormData();
+      
+      // Calculate word count
+      const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
+      
+      // Create the story object and append as JSON
+      const storyData = {
+        Title: title,
+        Content: value,
+        WordCount: wordCount
+      };
+      
+      // Append story data as JSON string
+      formData.append('Story.Title', title);
+      formData.append('Story.Content', value);
+      formData.append('Story.WordCount', wordCount.toString());
+      
+      // Append image files
+      imageFiles.forEach((imageFile, index) => {
+        formData.append('Files', imageFile.file);
+      });
+
+
+      setIsLoading(true);
+
+      const authToken = localStorage.getItem("token");
+      const response = await CreateTimeline(formData, authToken);
+    
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result);
+
+        if(result.success){
+          setIsLoading(false);
+          toast.success("Story saved successfully!");
+        } else {
+          setIsLoading(false);
+          toast.error(result.errorMessage);
+        }
+        
+        // Optional: Clear form after successful submission
+        // setTitle("");
+        // setValue("");
+        // setImages({});
+        // setImageFiles([]);
+      } else {
+        setIsLoading(false);
+        toast.error("Network error: Please check your network connection or try again later");
+      }
+    } catch (error) {
+      setIsLoading(false);
+      toast.error("Network error: Please check your network connection or try again later");
+    } finally {
+      setIsSubmitting(false);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => {
+        setSubmitMessage("");
+      }, 5000);
+    }
+  };
+
   const saveStory = () => {
     const storyData = {
       title: title,
@@ -146,6 +256,8 @@ const Editor = () => {
           setTitle(storyData.title || '');
           setValue(storyData.content || '');
           setImages(storyData.images || {});
+          // Note: loaded stories won't have actual files for API submission
+          setImageFiles([]);
         } catch (error) {
           alert('Error loading story file. Please make sure it\'s a valid story file.');
           console.error('Error parsing story file:', error);
@@ -162,7 +274,8 @@ const Editor = () => {
   const imageCount = Object.keys(images).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
       
       {/* Hidden file inputs */}
       <input
@@ -200,10 +313,17 @@ const Editor = () => {
             </h1>
           </div>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            Let your memories flow onto the page, where every word becomes part of your legacy
+            Let your memories flow onto the page and every word becomes part of your legacy
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-stone-400 to-slate-400 mx-auto mt-4 rounded-full"></div>
         </div>
+
+        {/* Submit Message */}
+        {submitMessage && (
+          <div className={`mb-4 p-4 rounded-lg text-center ${submitMessage.includes('successfully') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
+            {submitMessage}
+          </div>
+        )}
 
         {/* Editor Container */}
         <div className={`transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
@@ -247,13 +367,13 @@ const Editor = () => {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <button
+                  {/* <button
                     onClick={() => loadFileInputRef.current?.click()}
                     className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 hover:text-stone-900 rounded-lg transition-all duration-200 text-sm font-medium"
                   >
                     <FolderOpen size={16} />
                     <span className="hidden sm:inline">Load Story</span>
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => setShowPreview(!showPreview)}
                     className="flex items-center space-x-2 px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
@@ -261,12 +381,20 @@ const Editor = () => {
                     {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
                     <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
                   </button>
-                  <button 
+                  {/* <button 
                     onClick={saveStory}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg"
+                    className="flex items-center space-x-2 px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
                   >
                     <Save size={16} />
-                    <span className="hidden sm:inline">Save Story</span>
+                    <span className="hidden sm:inline">Save Local</span>
+                  </button> */}
+                  <button 
+                    onClick={submitStory}
+                    disabled={isSubmitting}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg"
+                  >
+                    <Upload size={16} />
+                    <span className="hidden sm:inline">{isSubmitting ? 'Submitting...' : 'Submit Story'}</span>
                   </button>
                 </div>
               </div>
@@ -282,9 +410,12 @@ const Editor = () => {
                     type="text"
                     value={title}
                     onChange={handleTitleChange}
-                    placeholder="Give your story a beautiful title..."
+                    placeholder="Give your story a beautiful title... (15-50 characters)"
                     className="w-full text-2xl font-serif font-bold text-stone-800 placeholder-stone-400 bg-transparent border-none outline-none focus:ring-0"
                   />
+                  <div className="text-xs text-stone-500 mt-1">
+                    {title.length}/50 characters
+                  </div>
                 </div>
                 <textarea
                   id="editor-textarea"
@@ -300,7 +431,9 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
 # Headings
 > Quotes
 
-*Add images by clicking the Image button in the toolbar*"
+*Add images by clicking the Image button in the toolbar*
+
+Minimum 100 characters and 10 words required."
                   className="w-full h-96 md:h-[500px] text-stone-700 placeholder-stone-400 bg-transparent border-none outline-none resize-none focus:ring-0 leading-relaxed text-base"
                   style={{ fontFamily: 'inherit' }}
                 />
@@ -340,8 +473,8 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-stone-500">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span>Ready to save</span>
+                    <div className={`w-2 h-2 rounded-full ${validateForm().length === 0 ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`}></div>
+                    <span>{validateForm().length === 0 ? 'Ready to submit' : 'Validation required'}</span>
                   </div>
                 </div>
               </div>
@@ -361,13 +494,22 @@ Begin weaving your story here. Share your memories, dreams, and moments that mat
                 <strong className="text-stone-700">Include Images:</strong> Add photos to bring your memories to life and create visual storytelling.
               </div>
               <div>
-                <strong className="text-stone-700">Save & Share:</strong> Your stories are saved as portable files that can be opened and edited anytime.
+                <strong className="text-stone-700">Requirements:</strong> Title: 15-50 chars, Content: min 100 chars & 10 words.
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+      <LoadingOverlay
+        isVisible={isLoading}
+        message="Uploading timeline"
+        submessage="Please wait while we upload your timeline"
+        variant="slate"
+        size="medium"
+        showDots={true}
+      />
+    </>
   );
 };
 
