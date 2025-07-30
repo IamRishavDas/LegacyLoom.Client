@@ -66,3 +66,14 @@ export const GetMyTimelines = async (authToken, paginationProperties) => {
   return response;
 }
 
+export const GetMyTimelineById = async (authToken, timelineId) => {
+  const response = await fetch(`${URLS.GET_MY_TIMELINE_BY_ID(timelineId)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response;
+}
+

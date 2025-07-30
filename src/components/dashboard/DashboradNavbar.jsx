@@ -16,8 +16,8 @@ export default function DashboardNavbar() {
     const profileImage = avatarServices[0];
 
     const navItems = [
-        { icon: Home, label: 'Home', active: false, link: '/dashboard' },
-        { icon: Users, label: 'Timeline', active: false, link: '/not-found' },
+        { icon: Users, label: 'Home', active: false, link: '/dashboard' },
+        { icon: Home, label: 'My Timelines', active: false, link: '/my-timelines' },
         { icon: Plus, label: 'Create', active: false, link: '/timeline-editor' }
     ];
 

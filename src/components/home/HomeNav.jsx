@@ -9,7 +9,6 @@ function HomeNav() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="flex justify-between items-center h-16">
-            <Link to={"/dashboard"}>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-stone-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
                   <Snowflake className="w-5 h-5 text-stone-100" />
@@ -18,7 +17,6 @@ function HomeNav() {
                   Legacy Loom 
                 </span>
               </div>
-            </Link>
             
 
             <div className="flex items-center space-x-4">

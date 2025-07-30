@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Eye, EyeOff, FileText, Image, Upload, FolderOpen, X } from 'lucide-react';
-import { CreateTimeline } from "../../../apis/apicalls/apicalls";
+import { Eye, EyeOff, FileText, Image, Upload, X } from 'lucide-react';
 import { toast } from "react-toastify";
+import { CreateTimeline } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
+import { useNavigate } from "react-router-dom";
 
 const Editor = () => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [images, setImages] = useState({}); // Store images with unique IDs
   const [imageFiles, setImageFiles] = useState([]); // Store actual File objects for API
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
-  const loadFileInputRef = useRef(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -73,6 +73,14 @@ const Editor = () => {
     setImages(prev => {
       const newImages = { ...prev };
       delete newImages[imageId];
+      
+      // Update sessionStorage
+      if (Object.keys(newImages).length === 0) {
+        sessionStorage.removeItem('story-editor-images');
+      } else {
+        sessionStorage.setItem('story-editor-images', JSON.stringify(newImages));
+      }
+      
       return newImages;
     });
 
@@ -139,7 +147,7 @@ const Editor = () => {
   };
 
   const submitStory = async () => {
-    if(isLoading) return;
+    if(isSubmitting) return;
 
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
@@ -166,25 +174,21 @@ const Editor = () => {
         formData.append('Files', imageFile.file);
       });
 
-      setIsLoading(true);
-
       const authToken = localStorage.getItem("token");
       const response = await CreateTimeline(formData, authToken);
       const data = await response.json();
 
       if(data.success){
-        setIsLoading(false);
-        toast.success("Story saved successfully!");
+        toast.success("Story uploaded successfully");
+        navigate("my-timelines");
       } else {
-
+        toast.warn(data.errorMessage);
       }
       
-      
     } catch (error) {
-      setIsLoading(false);
+      setIsSubmitting(false);
       toast.error("Network error: Please check your network connection or try again later");
     } finally {
-      setIsLoading(false);
       setIsSubmitting(false);
     }
   };
@@ -219,6 +223,7 @@ const Editor = () => {
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-stone-400 to-slate-400 mx-auto mt-4 rounded-full"></div>
         </div>
+
 
         {/* Editor Container */}
         <div className={`transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
@@ -445,9 +450,8 @@ Minimum 100 characters and 10 words required."
       </div>
       </div>
 
-      {/* Loading Overlay Simulation */}
       <LoadingOverlay
-        isVisible={isLoading}
+        isVisible={isSubmitting}
         message="Uploading timeline"
         submessage="Please wait while we upload your timeline"
         variant="slate"

@@ -1,4 +1,3 @@
-import DashboardNavbar from './DashboradNavbar';
 import StoryCard from './StoryCard';
 
 export default function DashboardHome() {
@@ -12,7 +11,6 @@ export default function DashboardHome() {
                 <div className="absolute bottom-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/15 to-slate-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
             </div>
 
-            <StoryCard/>
 
         </div>
         </>
