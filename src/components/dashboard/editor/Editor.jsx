@@ -181,6 +181,8 @@ const Editor = () => {
       if(data.success){
         toast.success("Story uploaded successfully");
         navigate("/my-timelines");
+        window.location.reload();
+        return;
       } else {
         toast.warn(data.errorMessage);
       }
