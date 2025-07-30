@@ -180,7 +180,7 @@ const Editor = () => {
 
       if(data.success){
         toast.success("Story uploaded successfully");
-        navigate("my-timelines");
+        navigate("/my-timelines");
       } else {
         toast.warn(data.errorMessage);
       }

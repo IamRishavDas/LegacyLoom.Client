@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { setTimelines, resetStoryCardState } from '../../../store/storyCardSlice';
 import StoryCard from '../StoryCard';
 import { GetMyTimelines } from '../../../apis/apicalls/apicalls';
 import { toast } from 'react-toastify';
@@ -7,15 +9,26 @@ import LoadingOverlay from '../../loading-overlay/LoadingOverlay';
 
 export default function MyTimelines() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const { timelines } = useSelector((state) => state.storyCard);
   const [isLoading, setIsLoading] = useState(false);
-  const [myTimelines, setMyTimelines] = useState([]);
 
-  const fetchData = async () => {
+  const fetchData = async (force = false) => {
+    if (!force && timelines.length > 0) {
+      return;
+    }
+
     if (isLoading) return;
     setIsLoading(true);
     try {
       const authToken = localStorage.getItem('token');
       const response = await GetMyTimelines(authToken, { pageNumber: null, pageSize: null, orderBy: null });
+
+      if(response.status === 429){
+          toast.warn("Too many request are made, please relax yourself while using this application");
+          return;
+      }
 
       if (response.status === 401) {
         setIsLoading(false);
@@ -26,7 +39,7 @@ export default function MyTimelines() {
 
       const data = await response.json();
       if (data.success) {
-        setMyTimelines(data.data);
+        dispatch(setTimelines(data.data));
       } else {
         toast.error(data.errorMessage || 'Failed to load stories');
       }
@@ -39,8 +52,10 @@ export default function MyTimelines() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (timelines.length === 0) {
+      fetchData();
+    }
+  }, [timelines]);
 
   return (
     <section>
@@ -48,8 +63,8 @@ export default function MyTimelines() {
         <StoryCard
           title="Stories from your Heart"
           secondaryTitle="Where memories find their voice and moments become eternal"
-          data={myTimelines}
-          refetch={fetchData}
+          data={timelines}
+          refetch={() => fetchData(true)}
         />
       </div>
       {isLoading && (

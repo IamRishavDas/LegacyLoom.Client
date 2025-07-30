@@ -28,6 +28,12 @@ export default function MyTimeline() {
       setIsLoading(true);
       try {
         const response = await GetMyTimelineById(authToken, id);
+
+        if(response.status === 429){
+          toast.warn("Too many request are made, please relax yourself while using this application");
+          return;
+        }
+
         if (response.status === 401) {
           setIsLoading(false);
           navigate("/user-login");

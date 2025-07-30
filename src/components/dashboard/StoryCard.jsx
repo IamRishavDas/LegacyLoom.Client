@@ -14,7 +14,6 @@ function StoryCard(props) {
   const touchStartY = useRef(null);
   const containerRef = useRef(null);
 
-  // Set isVisible on mount, unless navigating back
   useEffect(() => {
     if (!isVisible && !location.state?.fromBackNavigation) {
       const timer = setTimeout(() => {
@@ -24,7 +23,6 @@ function StoryCard(props) {
     }
   }, [isVisible, dispatch, location.state]);
 
-  // Custom pull-to-refresh logic
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -51,7 +49,7 @@ function StoryCard(props) {
       if (pullState === 'pulling' && pullDistance > 100) {
         setPullState('refreshing');
         setTimeout(() => {
-          dispatch(resetStoryCardState());
+          dispatch(resetStoryCardState()); // Resets isVisible, currentImageIndex, and timelines
           if (props.refetch) props.refetch();
           setPullState('idle');
           setPullDistance(0);
@@ -131,7 +129,6 @@ function StoryCard(props) {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-100">
-      {/* Pull-to-Refresh Indicator */}
       <div
         className="fixed top-0 left-0 right-0 h-16 flex items-center justify-center bg-amber-100 transition-transform duration-300"
         style={{ transform: `translateY(${pullState === 'pulling' ? pullDistance : 0}px)` }}
@@ -148,7 +145,6 @@ function StoryCard(props) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 relative z-10">
-        {/* Header */}
         <div
           className={`text-center mb-12 transition-all duration-1000 ease-out ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
@@ -163,7 +159,6 @@ function StoryCard(props) {
           <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-orange-400 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        {/* Stories Grid */}
         <div className="space-y-8">
           {props.data.map((story, index) => (
             <div
@@ -174,7 +169,6 @@ function StoryCard(props) {
               }`}
               style={{ transitionDelay: `${index * 200}ms` }}
             >
-              {/* Story Header */}
               <div className="p-6 pb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -190,17 +184,14 @@ function StoryCard(props) {
                   </div>
                 </div>
 
-                {/* Story Title */}
                 <h2 className="text-2xl font-serif font-bold text-stone-800 mb-3 hover:text-amber-700 transition-colors duration-200">
                   {story.storyDTO.title}
                 </h2>
 
-                {/* Story Content Preview */}
                 <p className="text-stone-600 leading-relaxed mb-4 font-light line-clamp-3">
                   {story.storyDTO.content + ' ...'}
                 </p>
 
-                {/* Read More Indicator */}
                 <div className="text-amber-600 text-sm font-medium flex items-center space-x-1">
                   <span>Read full story</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +200,6 @@ function StoryCard(props) {
                 </div>
               </div>
 
-              {/* Story Images */}
               {story.storyDTO.medias?.images?.length > 0 && (
                 <div className="px-6 pb-4">
                   {story.storyDTO.medias.images.length === 1 ? (
@@ -231,12 +221,10 @@ function StoryCard(props) {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
 
-                        {/* Image counter */}
                         <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
                           {(currentImageIndex[story.id] || 0) + 1} / {story.storyDTO.medias.images.length}
                         </div>
 
-                        {/* Navigation arrows */}
                         {story.storyDTO.medias.images.length > 1 && (
                           <>
                             <button
@@ -255,7 +243,6 @@ function StoryCard(props) {
                         )}
                       </div>
 
-                      {/* Image dots indicator */}
                       {story.storyDTO.medias.images.length > 1 && (
                         <div className="flex justify-center mt-3 space-x-2">
                           {story.storyDTO.medias.images.map((_, index) => (
@@ -279,7 +266,6 @@ function StoryCard(props) {
           ))}
         </div>
 
-        {/* Load More Button */}
         <div className="text-center mt-12">
           <button className="px-8 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-medium rounded-full hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
             Discover More Stories
