@@ -7,13 +7,9 @@ export default function DashboardNavbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
+
     
-    // Generate a random profile picture using random avatar services
-    const avatarServices = [
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-    ];
-    
-    const profileImage = avatarServices[0];
+    const profileImage = '/DemoProfileImage/Profile.jpg';
 
     const navItems = [
         { icon: Users, label: 'Home', active: false, link: '/dashboard' },
@@ -67,13 +63,11 @@ export default function DashboardNavbar() {
 
                     {/* Profile and Logout */}
                     <div className="hidden md:flex items-center space-x-3">
-                        <Link to={"/not-authorized"}>
-                            <img 
-                                src={profileImage}
-                                alt="Profile"
-                                className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white"
-                            />
-                        </Link>
+                        <img 
+                            src={profileImage}
+                            alt="Profile"
+                            className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white"
+                        />
                         <button className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer"
                                 onClick={() =>  setShowLogoutModal(true)}>
                             <LogOut size={18} />
@@ -107,17 +101,19 @@ export default function DashboardNavbar() {
                             
                             {/* Navigation items */}
                             {navItems.map((item, index) => (
-                                <button
-                                    key={index}
-                                    className={`flex items-center space-x-3 px-4 py-3 mx-2 rounded-lg transition-all duration-200 ${
-                                        item.active 
-                                            ? 'bg-stone-100 text-stone-800' 
-                                            : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-                                    }`}
-                                >
-                                    <item.icon size={20} />
-                                    <span className="font-medium">{item.label}</span>
-                                </button>
+                                <Link key={index} to={`${item.link}`}>
+                                    <button
+                                        key={index}
+                                        className={`flex items-center space-x-3 px-4 py-3 mx-2 rounded-lg transition-all duration-200 ${
+                                            item.active 
+                                                ? 'bg-stone-100 text-stone-800' 
+                                                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                                        }`}
+                                    >
+                                        <item.icon size={20} />
+                                        <span className="font-medium">{item.label}</span>
+                                    </button>
+                                </Link>
                             ))}
                             
                             {/* Logout */}

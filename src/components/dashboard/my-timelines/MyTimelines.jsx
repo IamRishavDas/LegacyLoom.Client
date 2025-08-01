@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   setTimelines,
   setPagination,
-  resetStoryCardState,
 } from "../../../store/storyCardSlice";
 import StoryCard from "../StoryCard";
 import { GetMyTimelines } from "../../../apis/apicalls/apicalls";
