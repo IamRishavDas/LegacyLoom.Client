@@ -266,11 +266,11 @@ function StoryCard(props) {
           ))}
         </div>
 
-        <div className="text-center mt-12">
+        {/* <div className="text-center mt-12">
           <button className="px-8 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-medium rounded-full hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
             Discover More Stories
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

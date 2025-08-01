@@ -25,19 +25,28 @@ export default function MyTimeline() {
     const getData = async () => {
       if (isLoading) return;
       const authToken = localStorage.getItem("token");
+      
       setIsLoading(true);
+      
+      if(authToken === null){
+        setIsLoading(false);
+        navigate("/user-login");
+        toast.warn("Login to access this page");
+        return;
+      }
+
       try {
         const response = await GetMyTimelineById(authToken, id);
 
         if(response.status === 429){
-          toast.warn("Too many request are made, please relax yourself while using this application");
+          toast.warn("Too many requests are made");
           return;
         }
 
         if (response.status === 401) {
           setIsLoading(false);
+          toast.warn("Login to access this page");
           navigate("/user-login");
-          toast.info("Please log in again");
           return;
         }
         const data = await response.json();
@@ -75,7 +84,7 @@ export default function MyTimeline() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
           <p className="text-stone-600 text-center">Failed to load story. Please try again.</p>
           <button
-            onClick={() => navigate("/my-timelines", { state: { fromBackNavigation: true } })}
+            onClick={() => navigate(-1, { state: { fromBackNavigation: true } })}
             className="mt-4 flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

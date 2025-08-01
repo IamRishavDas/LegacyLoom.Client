@@ -17,6 +17,11 @@ const Editor = () => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+    if(localStorage.getItem("token") === null){
+      toast.warn("Login to access this page");
+      navigate("/user-login");
+      return;
+    }
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 200);
@@ -176,6 +181,13 @@ const Editor = () => {
 
       const authToken = localStorage.getItem("token");
       const response = await CreateTimeline(formData, authToken);
+
+      if(response.status === 401){
+        setIsSubmitting(false);
+        navigate("/user-login");
+        return;
+      }
+
       const data = await response.json();
 
       if(data.success){
