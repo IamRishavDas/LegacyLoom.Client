@@ -56,14 +56,25 @@ const ImageModal = ({ isOpen, images, initialIndex = 0, onClose }) => {
     setIsZoomed(!isZoomed);
   };
 
-  const downloadImage = () => {
-    const link = document.createElement('a');
-    link.href = images[currentIndex].data;
-    link.download = `image-${currentIndex + 1}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+const downloadImage = async () => {
+    try {
+        const imageUrl = images[currentIndex].data;
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `image-${currentIndex + 1}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Failed to download image:', error);
+    }
+};
 
   if (!isOpen || !images || images.length === 0) return null;
 
