@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setIsVisible, setCurrentImageIndex, resetStoryCardState } from '../../store/storyCardSlice';
+import { renderPreview } from '../../utils/Utils';
 
 function StoryCard(props) {
   const navigate = useNavigate();
@@ -189,7 +190,13 @@ function StoryCard(props) {
                 </h2>
 
                 <p className="text-stone-600 leading-relaxed mb-4 font-light line-clamp-3">
-                  {story.storyDTO.content + ' ...'}
+                  <div 
+                    className="text-stone-700 leading-relaxed text-lg font-light"
+                    dangerouslySetInnerHTML={{ 
+                      __html: renderPreview(story.storyDTO.content) 
+                    }}
+                  />
+                  {/* {story.storyDTO.content + ' ...'} */}
                 </p>
 
                 <div className="text-amber-600 text-sm font-medium flex items-center space-x-1">
