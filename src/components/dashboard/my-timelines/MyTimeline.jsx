@@ -4,12 +4,15 @@ import { GetMyTimelineById } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
 import { Clock, Eye } from "lucide-react";
 import { toast } from "react-toastify";
+import ImageModal from "../../modals/ImageModal";
 
 export default function MyTimeline() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [story, setStory] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -19,6 +22,27 @@ export default function MyTimeline() {
     if (diffInHours < 24) return `${diffInHours} hours ago`;
     if (diffInHours < 48) return "1 day ago";
     return `${Math.floor(diffInHours / 24)} days ago`;
+  };
+
+  // Same renderPreview function as in Editor component
+  const renderPreview = (text) => {
+    let rendered = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-serif font-bold text-stone-800 mb-4">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-serif font-semibold text-stone-800 mb-3">$1</h2>')
+      .replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-stone-300 pl-4 italic text-stone-600 my-4">$1</blockquote>');
+
+    return rendered.replace(/\n/g, '<br>');
+  };
+
+  const openImageModal = (index) => {
+    setSelectedImageIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsModalOpen(false);
   };
 
   useEffect(() => {
@@ -135,24 +159,50 @@ export default function MyTimeline() {
             {story.storyDTO.medias?.images?.length > 0 && (
               <div className="px-8 pb-6">
                 {story.storyDTO.medias.images.length === 1 ? (
-                  <div className="relative overflow-hidden rounded-xl shadow-lg">
+                  <div 
+                    className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer group"
+                    onClick={() => openImageModal(0)}
+                  >
                     <img
                       src={story.storyDTO.medias.images[0].data}
                       alt={story.storyDTO.title}
-                      className="w-full h-80 object-cover"
+                      className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent group-hover:from-black/30 transition-all duration-300"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     {story.storyDTO.medias.images.map((image, index) => (
-                      <div key={index} className="relative overflow-hidden rounded-xl shadow-lg">
+                      <div 
+                        key={index} 
+                        className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer group"
+                        onClick={() => openImageModal(index)}
+                      >
                         <img
                           src={image.data}
                           alt={`${story.storyDTO.title} - Image ${index + 1}`}
-                          className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent group-hover:from-black/20 transition-all duration-300"></div>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                            </svg>
+                          </div>
+                        </div>
+                        {story.storyDTO.medias.images.length > 1 && (
+                          <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                            {index + 1}/{story.storyDTO.medias.images.length}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -162,12 +212,23 @@ export default function MyTimeline() {
 
             <div className="px-8 pb-8">
               <div className="prose prose-lg prose-stone max-w-none">
-                <p className="text-stone-700 leading-relaxed text-lg font-light">
-                  {story.storyDTO.content}
-                </p>
+                <div 
+                  className="text-stone-700 leading-relaxed text-lg font-light"
+                  dangerouslySetInnerHTML={{ 
+                    __html: renderPreview(story.storyDTO.content) 
+                  }}
+                />
               </div>
             </div>
           </article>
+
+          {/* Image Modal */}
+          <ImageModal
+            isOpen={isModalOpen}
+            images={story?.storyDTO?.medias?.images || []}
+            initialIndex={selectedImageIndex}
+            onClose={closeImageModal}
+          />
         </div>
       </div>
     </section>
