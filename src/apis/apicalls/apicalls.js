@@ -88,3 +88,14 @@ export const GetPublicFeed = async (authToken, paginationProperties) => {
   return response;
 }
 
+export const DeleteMyTimeline = async (authToken, id) => {
+  const response = await fetch(`${URLS.DELETE_MY_TIMELINE(id)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    }
+  });
+  return response;
+}
+

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GetMyTimelineById } from "../../../apis/apicalls/apicalls";
+import { DeleteMyTimeline, GetMyTimelineById } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
-import { Clock, Eye } from "lucide-react";
+import { Clock, Eye, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import ImageModal from "../../modals/ImageModal";
+import DeleteConfirmationModal from "../../modals/DeleteConfirmationModal";
 import { renderPreview } from "../../../utils/Utils";
 
 export default function MyTimeline() {
@@ -14,6 +15,8 @@ export default function MyTimeline() {
   const [story, setStory] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -25,7 +28,6 @@ export default function MyTimeline() {
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-
   const openImageModal = (index) => {
     setSelectedImageIndex(index);
     setIsModalOpen(true);
@@ -33,6 +35,68 @@ export default function MyTimeline() {
 
   const closeImageModal = () => {
     setIsModalOpen(false);
+  };
+
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  // Add your delete API call function here
+  const deleteStory = async () => {
+    const authToken = localStorage.getItem("token");
+    
+    if (!authToken) {
+      toast.warn("Login to perform this action");
+      navigate("/user-login");
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      // Replace this with your actual delete API call
+      const response = await DeleteMyTimeline(authToken, id);
+
+      if (response.status === 429) {
+        toast.warn("Too many requests are made");
+        return;
+      }
+
+      if(response.state === 403){
+        toast.warn("You are unauthorized to perform this operation");
+        return;
+      }
+
+      if (response.status === 401) {
+        toast.warn("Login to perform this action");
+        navigate("/user-login");
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsDeleting(false);
+        setIsDeleteModalOpen(false);
+        navigate("/my-timelines");
+        window.location.reload();
+        toast.success("Story deleted successfully");
+        return;
+      } else {
+        toast.error(data.errorMessage || "Failed to delete story");
+      }
+    } catch (error) {
+        setIsDeleting(false);
+        setIsDeleteModalOpen(false);
+        toast.error("Network error: Please check your network connection or try again later");
+    } finally {
+        setIsDeleting(false);
+        setIsDeleteModalOpen(false);
+    }
   };
 
   useEffect(() => {
@@ -115,16 +179,26 @@ export default function MyTimeline() {
     <section>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate("/my-timelines", { state: { fromBackNavigation: true } })}
-            className="mb-8 flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span>Back to Stories</span>
-          </button>
+          {/* Header with Back Button and Delete Button */}
+          <div className="flex items-center justify-between mb-8">
+            <button
+              onClick={() => navigate("/my-timelines", { state: { fromBackNavigation: true } })}
+              className="flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Back to Stories</span>
+            </button>
+
+            <button
+              onClick={openDeleteModal}
+              className="flex items-center space-x-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
+            >
+              <Trash2 size={16} />
+              <span>Delete Story</span>
+            </button>
+          </div>
 
           {/* Story Detail */}
           <article className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-stone-200/50">
@@ -218,6 +292,15 @@ export default function MyTimeline() {
             images={story?.storyDTO?.medias?.images || []}
             initialIndex={selectedImageIndex}
             onClose={closeImageModal}
+          />
+
+          {/* Delete Confirmation Modal */}
+          <DeleteConfirmationModal
+            isOpen={isDeleteModalOpen}
+            onClose={closeDeleteModal}
+            onConfirm={deleteStory}
+            isLoading={isDeleting}
+            storyTitle={story?.storyDTO?.title || "this story"}
           />
         </div>
       </div>

@@ -19,6 +19,7 @@ export default function DashboardHome() {
   const { publicFeed, publicPagination } = useSelector((state) => state.storyCard);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false); // Track initial fetch
 
   // Get current page from URL query params, default to 1
   const currentPageFromUrl = parseInt(searchParams.get('pageNumber')) || 1;
@@ -39,13 +40,18 @@ export default function DashboardHome() {
       if (
         !force &&
         !append &&
+        hasFetched &&
         publicFeed.length > 0 &&
         page === publicPagination.currentPage
       ) {
+        console.log('fetchData skipped: already fetched and data exists');
         return;
       }
 
-      if (isLoading || isLoadingMore) return;
+      if (isLoading || isLoadingMore) {
+        console.log('fetchData skipped: already loading');
+        return;
+      }
 
       if (append) {
         setIsLoadingMore(true);
@@ -124,23 +130,28 @@ export default function DashboardHome() {
           } else {
             dispatch(setPublicFeed(data.data));
           }
+          setHasFetched(true); // Mark fetch as complete
         } else {
           toast.error(data.errorMessage || 'Failed to load stories');
+          setHasFetched(true); // Prevent infinite retries on error
         }
       } catch (error) {
         console.error('Error fetching public feed:', error);
         toast.error('Network error: Please try again later');
+        setHasFetched(true); // Prevent infinite retries on error
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
       }
     },
-    [publicFeed, publicPagination, currentPageFromUrl, dispatch, navigate]
+    [publicFeed, publicPagination, currentPageFromUrl, dispatch, navigate, isLoading, isLoadingMore, hasFetched]
   );
 
   // Refresh current page
   const refreshData = useCallback(() => {
+    console.log('refreshData called');
     dispatch(resetStoryCardState());
+    setHasFetched(false); // Allow fetch on refresh
     fetchData(true, currentPageFromUrl, false);
   }, [dispatch, fetchData, currentPageFromUrl]);
 
@@ -148,16 +159,18 @@ export default function DashboardHome() {
   useEffect(() => {
     const pageFromUrl = parseInt(searchParams.get('pageNumber')) || 1;
     if (pageFromUrl !== publicPagination.currentPage || location.state?.forceFetch) {
+      console.log('URL change or forceFetch, fetching data:', { pageFromUrl, currentPage: publicPagination.currentPage, forceFetch: location.state?.forceFetch });
       fetchData(true, pageFromUrl, false);
     }
   }, [searchParams, location.state, publicPagination.currentPage, fetchData]);
 
   // Initial data fetch
   useEffect(() => {
-    if (publicFeed.length === 0 || location.state?.forceFetch) {
+    if (!hasFetched || location.state?.forceFetch) {
+      console.log('Initial fetch or forceFetch, hasFetched:', hasFetched, 'forceFetch:', location.state?.forceFetch);
       fetchData(true, currentPageFromUrl, false);
     }
-  }, [publicFeed.length, location.state, currentPageFromUrl, fetchData]);
+  }, [hasFetched, location.state, currentPageFromUrl, fetchData]);
 
   return (
     <>
@@ -167,22 +180,34 @@ export default function DashboardHome() {
           <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/20 to-slate-300/15 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/15 to-slate-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
-        {publicFeed && (
-          <PublicFeed
-            apiData={{ data: publicFeed }}
-            refetch={refreshData}
-            pagination={publicPagination}
-            goToPage={(page) => {
-              if (
-                page >= 1 &&
-                page <= publicPagination.totalPages &&
-                page !== publicPagination.currentPage
-              ) {
-                updatePageInUrl(page);
-                fetchData(true, page, false);
-              }
-            }}
-          />
+        {hasFetched && publicFeed.length === 0 ? (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 text-center">
+            <p className="text-stone-600 text-lg">No stories available.</p>
+            <button
+              onClick={refreshData}
+              className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors duration-200"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          publicFeed && (
+            <PublicFeed
+              apiData={{ data: publicFeed }}
+              refetch={refreshData}
+              pagination={publicPagination}
+              goToPage={(page) => {
+                if (
+                  page >= 1 &&
+                  page <= publicPagination.totalPages &&
+                  page !== publicPagination.currentPage
+                ) {
+                  updatePageInUrl(page);
+                  fetchData(true, page, false);
+                }
+              }}
+            />
+          )
         )}
       </div>
       {isLoading && (

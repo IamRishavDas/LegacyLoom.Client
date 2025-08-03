@@ -8,7 +8,8 @@ const URLS = {
     CREATE_TIMELINE: `${API_BASE_URL}/timelines`,
     GET_MY_TIMELINES: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/timelines/my-timelines?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`,
     GET_MY_TIMELINE_BY_ID: (id) => `${API_BASE_URL}/timelines/my-timelines/${id}`,
-    GET_PUBLIC_FEED: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/timelines/public?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`
+    GET_PUBLIC_FEED: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/timelines/public?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`,
+    DELETE_MY_TIMELINE: (id) => `${API_BASE_URL}/timelines/${id}`
 }
 
 export default URLS;
