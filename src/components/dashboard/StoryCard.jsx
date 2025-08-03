@@ -131,7 +131,7 @@ function StoryCard(props) {
   return (
     <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-100">
       <div
-        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-center bg-amber-100 transition-transform duration-300"
+        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-center transition-transform duration-300"
         style={{ transform: `translateY(${pullState === 'pulling' ? pullDistance : 0}px)` }}
       >
         {pullState === 'refreshing' ? (
@@ -141,7 +141,12 @@ function StoryCard(props) {
             <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce delay-200"></div>
           </div>
         ) : (
-          <span className="text-stone-600">Pull to refresh</span>
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce delay-100"></div>
+            <div className="w-3 h-3 bg-amber-500 rounded-full animate-bounce delay-200"></div>
+          </div>
+          // <span className="text-stone-600">Pull to refresh</span>
         )}
       </div>
 
@@ -189,7 +194,7 @@ function StoryCard(props) {
                   {story.storyDTO.title}
                 </h2>
 
-                <p className="text-stone-600 leading-relaxed mb-4 font-light line-clamp-3">
+                <div className="text-stone-600 leading-relaxed mb-4 font-light line-clamp-3">
                   <div 
                     className="text-stone-700 leading-relaxed text-lg font-light"
                     dangerouslySetInnerHTML={{ 
@@ -197,7 +202,7 @@ function StoryCard(props) {
                     }}
                   />
                   {/* {story.storyDTO.content + ' ...'} */}
-                </p>
+                </div>
 
                 <div className="text-amber-600 text-sm font-medium flex items-center space-x-1">
                   <span>Read full story</span>
