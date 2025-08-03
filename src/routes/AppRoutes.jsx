@@ -10,6 +10,7 @@ import HomeNav from '../components/home/HomeNav'
 import UnauthorizedPage from '../components/not-authenticated/UnauthorizedPage'
 import MyTimelines from '../components/dashboard/my-timelines/MyTimelines'
 import MyTimeline from '../components/dashboard/my-timelines/MyTimeline'
+import PublicTimeline from '../components/dashboard/dashboard-content/PublicTimeline'
 
 function AppRoutes() {
   return (
@@ -25,6 +26,7 @@ function AppRoutes() {
             <Route path='/dashboard' element={<UserDashboard/>}/>
             <Route path='/my-timelines' element={<MyTimelines/>}/>
             <Route path='/my-timelines/:id' element={<MyTimeline/>}/>
+            <Route path='/dashboard/:id' element={<PublicTimeline/>}/>
             <Route path='/timeline-editor' element={<Editor/>}/>
           </Route>
           <Route path='/not-found' element={<NotFound/>}/>

@@ -77,3 +77,14 @@ export const GetMyTimelineById = async (authToken, timelineId) => {
   return response;
 }
 
+export const GetPublicFeed = async (authToken, paginationProperties) => {
+  const response = await fetch(`${URLS.GET_PUBLIC_FEED(paginationProperties.pageNumber, paginationProperties.pageSize, paginationProperties.orderBy)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    }
+  });
+  return response;
+}
+
