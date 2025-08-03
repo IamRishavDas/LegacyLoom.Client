@@ -417,7 +417,7 @@ export default function MyTimelines() {
     <section>
       <div>
         <StoryCard
-          title="Stories from your Heart"
+          title="Your stories"
           secondaryTitle="Where memories find their voice and moments become eternal"
           data={timelines}
           refetch={refreshData}
