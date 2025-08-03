@@ -70,7 +70,7 @@ export default function MyTimeline() {
           toast.error(data.errorMessage || "Failed to load story");
         }
       } catch (error) {
-        console.error("Error fetching timeline:", error);
+        // console.error("Error fetching timeline:", error);
         toast.error("Network error: Please check your network connection or try again later");
       } finally {
         setIsLoading(false);
