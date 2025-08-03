@@ -182,6 +182,7 @@ export default function MyTimeline() {
           {/* Header with Back Button and Delete Button */}
           <div className="flex items-center justify-between mb-8">
             <button
+              style={{ cursor: "pointer" }}
               onClick={() => navigate("/my-timelines", { state: { fromBackNavigation: true } })}
               className="flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
             >
@@ -192,6 +193,7 @@ export default function MyTimeline() {
             </button>
 
             <button
+              style={{ cursor: "pointer" }}
               onClick={openDeleteModal}
               className="flex items-center space-x-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
             >

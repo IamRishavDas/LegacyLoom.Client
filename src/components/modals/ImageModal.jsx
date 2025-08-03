@@ -72,7 +72,7 @@ const downloadImage = async () => {
 
         window.URL.revokeObjectURL(url);
     } catch (error) {
-        console.error('Failed to download image:', error);
+        // console.error('Failed to download image:', error);
     }
 };
 

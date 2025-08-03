@@ -36,7 +36,7 @@ function PublicFeed(props) {
       if (window.scrollY <= 10) {
         touchStartY.current = e.touches[0].clientY;
         setPullState('pulling');
-        console.log('Pulling started, touchStartY:', touchStartY.current);
+        // console.log('Pulling started, touchStartY:', touchStartY.current);
       }
     };
 

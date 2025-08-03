@@ -98,6 +98,7 @@ export default function PublicTimeline() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
           <p className="text-stone-600 text-center">Failed to load story. Please try again.</p>
           <button
+            style={{ cursor: "pointer" }}
             onClick={() => window.history.back()}
             className="mt-4 flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
           >
@@ -117,6 +118,7 @@ export default function PublicTimeline() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
           {/* Back Button */}
           <button
+            style={{ cursor: "pointer" }}
             onClick={() => window.history.back()}
             className="mb-8 flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
           >

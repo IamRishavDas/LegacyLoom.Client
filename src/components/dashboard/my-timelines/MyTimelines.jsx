@@ -130,7 +130,7 @@ export default function MyTimelines() {
         toast.error(data.errorMessage || "Failed to load stories");
       }
     } catch (error) {
-      console.error("Error fetching timelines:", error);
+      // console.error("Error fetching timelines:", error);
       toast.error("Network error: Please try again later");
     } finally {
       setIsLoading(false);

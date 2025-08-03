@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Lock, ArrowLeft, Key, FileText, Shield } from 'lucide-react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SnowflakeAnimation, { SnowflakePresets } from "../animations/SnowflakeAnimation";
 
 const UnauthorizedPage = () => {
+
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [currentQuote, setCurrentQuote] = useState(0);
 
@@ -29,8 +31,7 @@ const UnauthorizedPage = () => {
   }, []);
 
   const handleLogin = () => {
-    // This would redirect to login page in a real application
-    console.log("Redirect to login page");
+    navigate("/user-login");
   };
 
   return (

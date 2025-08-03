@@ -44,12 +44,12 @@ export default function DashboardHome() {
         publicFeed.length > 0 &&
         page === publicPagination.currentPage
       ) {
-        console.log('fetchData skipped: already fetched and data exists');
+        // console.log('fetchData skipped: already fetched and data exists');
         return;
       }
 
       if (isLoading || isLoadingMore) {
-        console.log('fetchData skipped: already loading');
+        // console.log('fetchData skipped: already loading');
         return;
       }
 
@@ -136,7 +136,7 @@ export default function DashboardHome() {
           setHasFetched(true); // Prevent infinite retries on error
         }
       } catch (error) {
-        console.error('Error fetching public feed:', error);
+        // console.error('Error fetching public feed:', error);
         toast.error('Network error: Please try again later');
         setHasFetched(true); // Prevent infinite retries on error
       } finally {
@@ -149,7 +149,7 @@ export default function DashboardHome() {
 
   // Refresh current page
   const refreshData = useCallback(() => {
-    console.log('refreshData called');
+    // console.log('refreshData called');
     dispatch(resetStoryCardState());
     setHasFetched(false); // Allow fetch on refresh
     fetchData(true, currentPageFromUrl, false);
@@ -159,7 +159,7 @@ export default function DashboardHome() {
   useEffect(() => {
     const pageFromUrl = parseInt(searchParams.get('pageNumber')) || 1;
     if (pageFromUrl !== publicPagination.currentPage || location.state?.forceFetch) {
-      console.log('URL change or forceFetch, fetching data:', { pageFromUrl, currentPage: publicPagination.currentPage, forceFetch: location.state?.forceFetch });
+      // console.log('URL change or forceFetch, fetching data:', { pageFromUrl, currentPage: publicPagination.currentPage, forceFetch: location.state?.forceFetch });
       fetchData(true, pageFromUrl, false);
     }
   }, [searchParams, location.state, publicPagination.currentPage, fetchData]);
@@ -167,7 +167,7 @@ export default function DashboardHome() {
   // Initial data fetch
   useEffect(() => {
     if (!hasFetched || location.state?.forceFetch) {
-      console.log('Initial fetch or forceFetch, hasFetched:', hasFetched, 'forceFetch:', location.state?.forceFetch);
+      // console.log('Initial fetch or forceFetch, hasFetched:', hasFetched, 'forceFetch:', location.state?.forceFetch);
       fetchData(true, currentPageFromUrl, false);
     }
   }, [hasFetched, location.state, currentPageFromUrl, fetchData]);
