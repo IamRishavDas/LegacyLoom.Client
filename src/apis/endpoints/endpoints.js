@@ -1,5 +1,5 @@
 
-const API_BASE_URL = "https://localhost:7210/gateway/api"
+const API_BASE_URL = "https://legacyloomapplicationgateway-apa4f3aag7e4czf0.canadacentral-01.azurewebsites.net/gateway/api"
 const URLS = {
     REGISTER: `${API_BASE_URL}/users`,
     LOGIN_USERNAME: `${API_BASE_URL}/auth/login/username`,
