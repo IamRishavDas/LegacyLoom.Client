@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GetMyTimelineById } from "../../../apis/apicalls/apicalls";
+import { GetMyTimelineById, GetPublicTimelineById } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
 import { Clock, Eye } from "lucide-react";
 import { toast } from "react-toastify";
@@ -50,7 +50,7 @@ export default function PublicTimeline() {
       }
 
       try {
-        const response = await GetMyTimelineById(authToken, id);
+        const response = await GetPublicTimelineById(authToken, id);
 
         if(response.status === 429){
           toast.warn("Too many requests are made");
