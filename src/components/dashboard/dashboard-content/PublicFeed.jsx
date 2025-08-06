@@ -364,7 +364,7 @@ function PublicFeed(props) {
   return (
     <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-100">
       <div
-        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-center  transition-transform duration-300"
+        className="fixed top-0 left-0 right-0 h-16 flex items-center justify-center  transition-transform duration-300 z-20"
         style={{ transform: `translateY(${pullState === 'pulling' ? pullDistance : 0}px)` }}
       >
         {pullState === 'refreshing' ? (
@@ -384,26 +384,13 @@ function PublicFeed(props) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 relative z-10">
-        <div
-          className={`text-center mb-12 transition-all duration-1000 ease-out ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-          }`}
-        >
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-4">
-            Stories
-          </h1>
-          <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            Discover meaningful stories that connect generations and preserve memories
-          </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-orange-400 mx-auto mt-6 rounded-full"></div>
-        </div>
 
         <div className="space-y-8">
           {props.apiData.data.map((story, index) => (
             <div
               key={story.id}
               onClick={() => handleStoryClick(story)}
-              className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden border border-stone-200/50 cursor-pointer transform hover:scale-[1.02] ${
+              className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden border border-stone-200/50 cursor-pointer transform ${
                 isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
               }`}
               style={{ transitionDelay: `${index * 200}ms` }}

@@ -43,6 +43,16 @@ export const LoginUsingEmail = async (email, password) => {
   return response;
 }
 
+export const Logout = async () => {
+  const response = await fetch(`${URLS.LOGOUT}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    }
+  });
+  return response;
+}
+
 export const CreateTimeline = async (formData, authToken) => {
   const response = await fetch(`${URLS.CREATE_TIMELINE}`, {
     method: 'POST',

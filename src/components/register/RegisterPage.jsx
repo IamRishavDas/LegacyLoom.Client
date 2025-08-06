@@ -116,7 +116,7 @@ export default function RegisterPage() {
       if (data.success) {
         setIsLoading(false);
         toast.success(
-          data.successMessage == null ? "User registerd successfully" : data.successMessage + "Redirecting to login page");
+          data.successMessage == null ? "User registerd successfully" : data.successMessage + " redirecting to login page");
         navigate("/user-login");
       } else {
         setIsLoading(false);

@@ -213,23 +213,6 @@ const Editor = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative z-10">
         
-        {/* Header */}
-        <div className={`text-center mb-8 transition-all duration-1000 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-stone-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
-              <FileText className="w-6 h-6 text-stone-100" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
-              Craft Your Story
-            </h1>
-          </div>
-          <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            Let your memories flow onto the page and every word becomes part of your legacy
-          </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-stone-400 to-slate-400 mx-auto mt-4 rounded-full"></div>
-        </div>
-
-
         {/* Editor Container */}
         <div className={`transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-stone-200/50 overflow-hidden">
@@ -282,19 +265,19 @@ const Editor = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowPreview(!showPreview)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
+                    className="flex items-center  px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
                   >
                     {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
-                    <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
+                    <span className="hidden sm:inline ml-2" >{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
                   </button>
 
                   <button 
                     onClick={submitStory}
                     disabled={isSubmitting}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg"
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg"
                   >
                     <Upload size={16} />
-                    <span className="hidden sm:inline">{isSubmitting ? 'Submitting...' : 'Submit Story'}</span>
+                    <span className="hidden sm:inline ml-2">{isSubmitting ? 'Submitting...' : 'Submit Story'}</span>
                   </button>
                 </div>
               </div>
@@ -310,7 +293,7 @@ const Editor = () => {
                     type="text"
                     value={title}
                     onChange={handleTitleChange}
-                    placeholder="Give your story a beautiful title... (15-50 characters)"
+                    placeholder="Story title ... (15-50 characters)"
                     className="w-full text-2xl font-serif font-bold text-stone-800 placeholder-stone-400 bg-transparent border-none outline-none focus:ring-0"
                   />
                   <div className="text-xs text-stone-500 mt-1">
@@ -324,14 +307,6 @@ const Editor = () => {
                   placeholder="Once upon a time...
 
 Begin weaving your story here. Share your memories, dreams, and moments that matter. Every word adds to the tapestry of your legacy.
-
-*Use formatting:*
-**bold text**
-*italic text*  
-# Headings
-> Quotes
-
-*Add images by clicking the Image button in the toolbar*
 
 Minimum 100 characters and 10 words required."
                   className="w-full h-96 md:h-[500px] text-stone-700 placeholder-stone-400 bg-transparent border-none outline-none resize-none focus:ring-0 leading-relaxed text-base"
