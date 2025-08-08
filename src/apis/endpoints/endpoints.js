@@ -10,7 +10,9 @@ const URLS = {
     GET_MY_TIMELINE_BY_ID: (id) => `${API_BASE_URL}/timelines/my-timelines/${id}`,
     GET_PUBLIC_FEED: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/timelines/public?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`,
     GET_PUBLIC_TIMELINE: (id) => `${API_BASE_URL}/timelines/public/${id}`,
-    DELETE_MY_TIMELINE: (id) => `${API_BASE_URL}/timelines/${id}`
+    DELETE_MY_TIMELINE: (id) => `${API_BASE_URL}/timelines/${id}`,
+    LIKE_TIMELINE: (id) => `${API_BASE_URL}/timelines/like?timelineId=${id}`,
+    DISLIKE_TIMELINE: (id) => `${API_BASE_URL}/timelines/dislike?timelineId=${id}`,
 }
 
 export default URLS;

@@ -223,31 +223,31 @@ const Editor = () => {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => insertFormatting('header')}
-                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 font-semibold text-sm"
+                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 font-semibold text-sm cursor-pointer"
                   >
                     H1
                   </button>
                   <button
                     onClick={() => insertFormatting('bold')}
-                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 font-bold text-sm"
+                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 font-bold text-sm cursor-pointer"
                   >
                     B
                   </button>
                   <button
                     onClick={() => insertFormatting('italic')}
-                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 italic text-sm"
+                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 italic text-sm cursor-pointer"
                   >
                     I
                   </button>
                   <button
                     onClick={() => insertFormatting('quote')}
-                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 text-sm"
+                    className="px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 text-sm cursor-pointer"
                   >
                     " "
                   </button>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center space-x-1 px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 text-sm"
+                    className="flex items-center space-x-1 px-3 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-lg text-stone-700 hover:text-stone-900 transition-all duration-200 text-sm cursor-pointer"
                   >
                     <Image size={14} />
                     <span>Image</span>
@@ -265,7 +265,7 @@ const Editor = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowPreview(!showPreview)}
-                    className="flex items-center  px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
+                    className="flex items-center  px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-all duration-200 text-sm font-medium cursor-pointer"
                   >
                     {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
                     <span className="hidden sm:inline ml-2" >{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
@@ -274,7 +274,7 @@ const Editor = () => {
                   <button 
                     onClick={submitStory}
                     disabled={isSubmitting}
-                    className="flex items-center px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg"
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg cursor-pointer"
                   >
                     <Upload size={16} />
                     <span className="hidden sm:inline ml-2">{isSubmitting ? 'Submitting...' : 'Submit Story'}</span>
@@ -293,7 +293,7 @@ const Editor = () => {
                     type="text"
                     value={title}
                     onChange={handleTitleChange}
-                    placeholder="Story title ... (15-50 characters)"
+                    placeholder="Story title ..."
                     className="w-full text-2xl font-serif font-bold text-stone-800 placeholder-stone-400 bg-transparent border-none outline-none focus:ring-0"
                   />
                   <div className="text-xs text-stone-500 mt-1">

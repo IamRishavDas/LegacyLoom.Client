@@ -6,6 +6,7 @@ import SnowflakeAnimation, {
 
 const LogoutConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // New loading state
   const modalRef = useRef(null);
   const firstFocusableRef = useRef(null);
   const lastFocusableRef = useRef(null);
@@ -161,10 +162,22 @@ const LogoutConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
             </button>
 
             <button
-              onClick={onConfirm}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 text-white rounded-xl transition-all duration-200 font-medium text-center shadow-lg transform hover:scale-[1.02] cursor-pointer"
+              onClick={async () => {
+                setIsLoading(true); // Set loading state
+                await onConfirm();
+                setIsLoading(false); // Clear loading state
+              }}
+              disabled={isLoading}
+              className={`flex-1 px-4 py-3 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 text-white rounded-xl transition-all duration-200 font-medium text-center shadow-lg transform hover:scale-[1.02] cursor-pointer relative ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Yes, Logout
+              <div className="flex items-center justify-center space-x-2">
+                <span>Yes, Logout</span>
+                {isLoading && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+              </div>
             </button>
           </div>
         </div>

@@ -120,3 +120,25 @@ export const DeleteMyTimeline = async (authToken, id) => {
   return response;
 }
 
+export const LikeTimeline = async (authToken, id) =>{
+  const response = await fetch(`${URLS.LIKE_TIMELINE(id)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    }
+  });
+  return response;
+}
+
+export const DislikeTimeline = async (authToken, id) =>{
+  const response = await fetch(`${URLS.DISLIKE_TIMELINE(id)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    }
+  });
+  return response;
+}
+

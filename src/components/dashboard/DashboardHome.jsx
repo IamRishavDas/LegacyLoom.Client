@@ -185,7 +185,7 @@ export default function DashboardHome() {
             <p className="text-stone-600 text-lg">No stories available.</p>
             <button
               onClick={refreshData}
-              className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors duration-200"
+              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200"
             >
               Try Again
             </button>
@@ -223,7 +223,7 @@ export default function DashboardHome() {
       {isLoadingMore && (
         <div className="fixed bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-stone-200/50">
           <div className="flex items-center space-x-2 text-sm text-stone-600">
-            <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <span>Loading more stories...</span>
           </div>
         </div>
