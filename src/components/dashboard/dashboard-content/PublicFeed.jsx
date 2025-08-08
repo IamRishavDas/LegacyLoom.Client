@@ -632,7 +632,7 @@ function PublicFeed(props) {
                   <button
                     onClick={(e) => handleLike(story, e)}
                     disabled={loadingStories.has(story.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                       story.isLikedByMe
                         ? 'bg-blue-500 text-white border-blue-500'
                         : 'text-gray-600 hover:text-blue-600 bg-gray-100 hover:bg-gray-200 border-gray-300 hover:border-blue-300'
@@ -660,7 +660,7 @@ function PublicFeed(props) {
                   <button
                     onClick={(e) => handleDislike(story, e)}
                     disabled={loadingStories.has(story.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                       story.isDislikedByMe
                         ? 'bg-red-500 text-white border-red-500'
                         : 'text-gray-600 hover:text-red-600 bg-gray-100 hover:bg-gray-200 border-gray-300 hover:border-red-300'

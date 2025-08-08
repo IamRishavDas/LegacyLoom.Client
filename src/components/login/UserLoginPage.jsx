@@ -120,7 +120,7 @@ export default function UserLoginPage() {
 
             if (data.success) {
                 setIsLoading(false);
-                toast.success("Login successfull");
+                toast.success("Login successful");
                 saveCredentialsToLocalStorage(data.data);
                 navigate("/dashboard");
             } else {

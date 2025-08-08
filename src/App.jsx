@@ -1,16 +1,18 @@
-import { Slide, ToastContainer } from "react-toastify"
-import AppRoutes from "./routes/AppRoutes"
+import { Slide, ToastContainer } from "react-toastify";
+import AppRoutes from "./routes/AppRoutes";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { resetStoryCardState } from "./store/storyCardSlice";
+import { resetPublicFeed, resetStoryCardState, resetTimelines } from "./store/storyCardSlice";
+import "./styles/toast.css"
 
 function App() {
-
   const dispatch = useDispatch();
 
   useEffect(() => {
     const handleBeforeUnload = () => {
       dispatch(resetStoryCardState());
+      dispatch(resetPublicFeed());
+      dispatch(resetTimelines());
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -30,10 +32,11 @@ function App() {
         pauseOnHover={false}
         theme="light"
         transition={Slide}
+        className="custom-toast-container"
       />
-      <AppRoutes/>
+      <AppRoutes />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
