@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, Plus, LogOut, Menu, X, Snowflake, Globe } from 'lucide-react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import LogoutConfirmationModal from '../modals/LogoutConfirmationModal';
 import { useDispatch } from 'react-redux';
 import { resetPublicFeed, resetStoryCardState, resetTimelines } from '../../store/storyCardSlice';
@@ -12,23 +12,22 @@ export default function DashboardNavbar() {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const location = useLocation();
 
-    
     const profileImage = '/DemoProfileImage/Profile.jpg';
 
     const navItems = [
-        { icon: Globe, label: 'Stories', active: false, link: '/dashboard' },
-        { icon: Home, label: 'My Timelines', active: false, link: '/my-timelines' },
-        { icon: Plus, label: 'Post', active: false, link: '/timeline-editor' }
+        { icon: Globe, label: 'Stories', active: location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/'), link: '/dashboard' },
+        { icon: Home, label: 'My Timelines', active: location.pathname === '/my-timelines' || location.pathname.startsWith('/my-timelines/'), link: '/my-timelines' },
+        { icon: Plus, label: 'Post', active: location.pathname === '/timeline-editor' || location.pathname.startsWith('/timeline-editor/'), link: '/timeline-editor' }
     ];
 
     const logout = async () => {
-
         try {
             const response = await Logout();
             const data = await response.json();
 
-            if(data.success){
+            if (data.success) {
                 localStorage.removeItem("userId");
                 localStorage.removeItem("userName");
                 localStorage.removeItem("email");
@@ -42,10 +41,9 @@ export default function DashboardNavbar() {
                 toast.success("Logout successfully");
                 return;
             }
-
         } catch (error) {
             toast.success("Logout successfully");
-        } finally{
+        } finally {
             localStorage.removeItem("userId");
             localStorage.removeItem("userName");
             localStorage.removeItem("email");
@@ -57,7 +55,6 @@ export default function DashboardNavbar() {
     
             navigate("/");
         }
-
     }
 
     return (
@@ -78,13 +75,12 @@ export default function DashboardNavbar() {
                         {/* Desktop Navigation */}
                         <div className="flex items-center space-x-1">
                             {navItems.map((item, index) => (
-                                <Link key={index} to={`${item.link}`}>
+                                <Link key={index} to={item.link}>
                                     <button
-                                        key={index}
-                                        style={{cursor: "pointer"}}
+                                        style={{ cursor: "pointer" }}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                                             item.active 
-                                                ? 'bg-stone-100 text-stone-800 shadow-sm' 
+                                                ? 'bg-blue-100 text-blue-800 shadow-sm' 
                                                 : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
                                         }`}
                                     >
@@ -102,8 +98,10 @@ export default function DashboardNavbar() {
                                 alt="Profile"
                                 className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white"
                             />
-                            <button className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer"
-                                    onClick={() =>  setShowLogoutModal(true)}>
+                            <button 
+                                className="flex items-center space-x-2 px-3 py-2 text-stone-600 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-all duration-200 cursor-pointer"
+                                onClick={() => setShowLogoutModal(true)}
+                            >
                                 <LogOut size={18} />
                                 <span className="font-medium">Logout</span>
                             </button>
@@ -120,11 +118,11 @@ export default function DashboardNavbar() {
                         {/* Mobile Navigation Buttons */}
                         <div className="flex items-center space-x-4 flex-1">
                             {navItems.map((item, index) => (
-                                <Link key={index} to={`${item.link}`} className="flex-1">
+                                <Link key={index} to={item.link} className="flex-1">
                                     <button
                                         className={`flex flex-col items-center justify-center w-full py-2 rounded-lg transition-all duration-200 ${
                                             item.active 
-                                                ? 'bg-stone-100 text-stone-800 shadow-sm' 
+                                                ? 'bg-blue-100 text-blue-800 shadow-sm' 
                                                 : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
                                         }`}
                                     >
@@ -183,7 +181,8 @@ export default function DashboardNavbar() {
                 onConfirm={async () => {
                     await logout();
                     setShowLogoutModal(false);
-                }}/>
+                }}
+            />
         </>
     );
 }
