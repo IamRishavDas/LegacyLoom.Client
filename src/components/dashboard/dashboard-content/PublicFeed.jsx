@@ -548,7 +548,7 @@ function PublicFeed(props) {
                   <div
                     className="text-gray-700 leading-relaxed text-lg font-light"
                     dangerouslySetInnerHTML={{
-                      __html: renderPreview(story.storyDTO.content + "   ... see more"),
+                      __html: renderPreview(story.storyDTO.content + "   ..."),
                     }}
                   />
                 </div>

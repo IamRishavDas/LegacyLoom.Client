@@ -21,6 +21,15 @@ const initialState = {
     hasPrevious: false,
     hasNext: false,
   },
+  drafts: [],
+  draftPagination: {
+    currentPage: 1,
+    totalPages: 1,
+    pageSize: 10,
+    totalCount: 0,
+    hasPrevious: false,
+    hasNext: false,
+  },
 };
 
 const storyCardSlice = createSlice({
@@ -53,6 +62,16 @@ const storyCardSlice = createSlice({
       state.publicFeed = [];
       state.publicPagination = initialState.publicPagination;
     },
+    setDrafts(state, action) {
+      state.drafts = action.payload;
+    },
+    setDraftPagination(state, action) {
+      state.draftPagination = action.payload;
+    },
+    resetDrafts(state) {
+      state.drafts = [];
+      state.draftPagination = initialState.draftPagination;
+    },
     resetStoryCardState(state) {
       state.isVisible = false;
       state.currentImageIndex = {};
@@ -60,6 +79,8 @@ const storyCardSlice = createSlice({
       state.pagination = initialState.pagination;
       state.publicFeed = [];
       state.publicPagination = initialState.publicPagination;
+      state.drafts = [];
+      state.draftPagination = initialState.draftPagination;
     },
   },
 });
@@ -73,6 +94,9 @@ export const {
   setPublicFeed,
   setPublicPagination,
   resetPublicFeed,
+  setDrafts,
+  setDraftPagination,
+  resetDrafts,
   resetStoryCardState,
 } = storyCardSlice.actions;
 export default storyCardSlice.reducer;

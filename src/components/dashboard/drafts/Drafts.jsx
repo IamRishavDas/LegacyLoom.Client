@@ -2,20 +2,21 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  setTimelines,
-  setPagination,
+  setDrafts,
+  setDraftPagination,
+  resetDrafts,
 } from "../../../store/storyCardSlice";
-import StoryCard from "../StoryCard";
-import { GetMyTimelines } from "../../../apis/apicalls/apicalls";
+import DraftCard from "./DraftCard";
 import { toast } from "react-toastify";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
+import { GetMyDrafts } from "../../../apis/apicalls/apicalls";
 
-export default function MyTimelines() {
+export default function Drafts() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { timelines, pagination } = useSelector((state) => state.storyCard);
+  const { drafts, draftPagination } = useSelector((state) => state.storyCard);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -41,8 +42,8 @@ export default function MyTimelines() {
     if (
       !force &&
       !append &&
-      timelines.length > 0 &&
-      page === pagination.currentPage
+      drafts.length > 0 &&
+      page === draftPagination.currentPage
     ) {
       return;
     }
@@ -66,9 +67,9 @@ export default function MyTimelines() {
         return;
       }
 
-      const response = await GetMyTimelines(authToken, {
+      const response = await GetMyDrafts(authToken, {
         pageNumber: page,
-        pageSize: pagination.pageSize,
+        pageSize: draftPagination.pageSize,
         orderBy: null,
       });
 
@@ -93,7 +94,7 @@ export default function MyTimelines() {
       if (paginationHeader) {
         const paginationData = JSON.parse(paginationHeader);
         dispatch(
-          setPagination({
+          setDraftPagination({
             currentPage: paginationData.CurrentPage,
             totalPages: paginationData.TotalPages,
             pageSize: paginationData.PageSize,
@@ -105,16 +106,16 @@ export default function MyTimelines() {
       } else {
         // Fallback pagination if header is missing
         dispatch(
-          setPagination({
+          setDraftPagination({
             currentPage: page,
             totalPages:
-              timelines.length > 0
-                ? Math.ceil(timelines.length / pagination.pageSize)
+              drafts.length > 0
+                ? Math.ceil(drafts.length / draftPagination.pageSize)
                 : 1,
-            pageSize: pagination.pageSize,
-            totalCount: timelines.length,
+            pageSize: draftPagination.pageSize,
+            totalCount: drafts.length,
             hasPrevious: page > 1,
-            hasNext: timelines.length === pagination.pageSize,
+            hasNext: drafts.length === draftPagination.pageSize,
           })
         );
       }
@@ -122,15 +123,14 @@ export default function MyTimelines() {
       const data = await response.json();
       if (data.success) {
         if (append) {
-          dispatch(setTimelines([...timelines, ...data.data]));
+          dispatch(setDrafts([...drafts, ...data.data]));
         } else {
-          dispatch(setTimelines(data.data));
+          dispatch(setDrafts(data.data));
         }
       } else {
-        toast.error(data.errorMessage || "Failed to load stories");
+        toast.error(data.errorMessage || "Failed to load drafts");
       }
     } catch (error) {
-      // console.error("Error fetching timelines:", error);
       toast.error("Network error: Please try again later");
     } finally {
       setIsLoading(false);
@@ -142,8 +142,8 @@ export default function MyTimelines() {
   const goToPage = (page) => {
     if (
       page >= 1 &&
-      page <= pagination.totalPages &&
-      page !== pagination.currentPage
+      page <= draftPagination.totalPages &&
+      page !== draftPagination.currentPage
     ) {
       updatePageInUrl(page);
       fetchData(true, page, false);
@@ -152,37 +152,38 @@ export default function MyTimelines() {
 
   // Refresh current page
   const refreshData = () => {
+    dispatch(resetDrafts());
     fetchData(true, currentPageFromUrl, false);
   };
 
   // Effect to handle URL changes (back/forward navigation)
   useEffect(() => {
     const pageFromUrl = parseInt(searchParams.get("pageNumber")) || 1;
-    if (pageFromUrl !== pagination.currentPage || location.state?.forceFetch) {
+    if (pageFromUrl !== draftPagination.currentPage || location.state?.forceFetch) {
       fetchData(true, pageFromUrl, false);
     }
-  }, [searchParams, location.state]);
+  }, [searchParams, location.state, draftPagination.currentPage]);
 
   // Initial data fetch
   useEffect(() => {
-    if (timelines.length === 0 || location.state?.forceFetch) {
+    if (drafts.length === 0 || location.state?.forceFetch) {
       fetchData(true, currentPageFromUrl, false);
     }
-  }, []);
+  }, [drafts.length, location.state, currentPageFromUrl]);
 
   // Pagination component
   const PaginationControls = () => {
-    if (pagination.totalPages <= 1) return null;
+    if (draftPagination.totalPages <= 1) return null;
 
     const renderPageNumbers = () => {
       const pages = [];
       const maxVisiblePages = 5;
       let startPage = Math.max(
         1,
-        pagination.currentPage - Math.floor(maxVisiblePages / 2)
+        draftPagination.currentPage - Math.floor(maxVisiblePages / 2)
       );
       let endPage = Math.min(
-        pagination.totalPages,
+        draftPagination.totalPages,
         startPage + maxVisiblePages - 1
       );
 
@@ -226,7 +227,7 @@ export default function MyTimelines() {
 
       // Page numbers
       for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === pagination.currentPage;
+        const isActive = i === draftPagination.currentPage;
         pages.push(
           <button
             key={i}
@@ -249,8 +250,8 @@ export default function MyTimelines() {
       }
 
       // Last page and ellipsis
-      if (endPage < pagination.totalPages) {
-        if (endPage < pagination.totalPages - 1) {
+      if (endPage < draftPagination.totalPages) {
+        if (endPage < draftPagination.totalPages - 1) {
           pages.push(
             <div
               key="ellipsis2"
@@ -272,11 +273,11 @@ export default function MyTimelines() {
         }
         pages.push(
           <button
-            key={pagination.totalPages}
-            onClick={() => goToPage(pagination.totalPages)}
+            key={draftPagination.totalPages}
+            onClick={() => goToPage(draftPagination.totalPages)}
             className="group relative px-4 py-2.5 text-sm font-medium text-stone-600 hover:text-blue-700 bg-white/70 hover:bg-blue-50/80 rounded-xl border border-stone-200/60 hover:border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105"
           >
-            <span className="relative z-10">{pagination.totalPages}</span>
+            <span className="relative z-10">{draftPagination.totalPages}</span>
             <div className="absolute inset-0 bg-gradient-to-r from-blue-100/0 to-blue-100/0 group-hover:from-blue-100/20 group-hover:to-blue-200/20 rounded-xl transition-all duration-300"></div>
           </button>
         );
@@ -292,13 +293,13 @@ export default function MyTimelines() {
           <p className="text-sm text-stone-500 font-medium">
             Showing page{" "}
             <span className="text-blue-600 font-semibold">
-              {pagination.currentPage}
+              {draftPagination.currentPage}
             </span>{" "}
             of{" "}
             <span className="text-blue-600 font-semibold">
-              {pagination.totalPages}
+              {draftPagination.totalPages}
             </span>{" "}
-            ({pagination.totalCount} stories)
+            ({draftPagination.totalCount} drafts)
           </p>
         </div>
 
@@ -311,17 +312,17 @@ export default function MyTimelines() {
           <div className="relative flex items-center space-x-2 bg-white/90 backdrop-blur-lg rounded-2xl p-3 shadow-xl border border-white/40">
             {/* Previous Button */}
             <button
-              onClick={() => goToPage(pagination.currentPage - 1)}
-              disabled={!pagination.hasPrevious}
+              onClick={() => goToPage(draftPagination.currentPage - 1)}
+              disabled={!draftPagination.hasPrevious}
               className={`group flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-300 transform ${
-                pagination.hasPrevious
+                draftPagination.hasPrevious
                   ? "text-stone-600 hover:text-blue-700 bg-white/70 hover:bg-blue-50/80 border-stone-200/60 hover:border-blue-200 shadow-sm hover:shadow-md hover:scale-105"
                   : "text-stone-400 bg-stone-50/50 border-stone-200/40 cursor-not-allowed opacity-60"
               }`}
             >
               <svg
                 className={`w-4 h-4 transition-transform duration-300 ${
-                  pagination.hasPrevious ? "group-hover:-translate-x-0.5" : ""
+                  draftPagination.hasPrevious ? "group-hover:-translate-x-0.5" : ""
                 }`}
                 fill="none"
                 stroke="currentColor"
@@ -344,10 +345,10 @@ export default function MyTimelines() {
 
             {/* Next Button */}
             <button
-              onClick={() => goToPage(pagination.currentPage + 1)}
-              disabled={!pagination.hasNext}
+              onClick={() => goToPage(draftPagination.currentPage + 1)}
+              disabled={!draftPagination.hasNext}
               className={`group flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-300 transform ${
-                pagination.hasNext
+                draftPagination.hasNext
                   ? "text-stone-600 hover:text-blue-700 bg-white/70 hover:bg-blue-50/80 border-stone-200/60 hover:border-blue-200 shadow-sm hover:shadow-md hover:scale-105"
                   : "text-stone-400 bg-stone-50/50 border-stone-200/40 cursor-not-allowed opacity-60"
               }`}
@@ -355,7 +356,7 @@ export default function MyTimelines() {
               <span className="hidden sm:inline">Next</span>
               <svg
                 className={`w-4 h-4 transition-transform duration-300 ${
-                  pagination.hasNext ? "group-hover:translate-x-0.5" : ""
+                  draftPagination.hasNext ? "group-hover:translate-x-0.5" : ""
                 }`}
                 fill="none"
                 stroke="currentColor"
@@ -373,20 +374,20 @@ export default function MyTimelines() {
         </div>
 
         {/* Quick Jump (optional - shows on larger screens) */}
-        {pagination.totalPages > 10 && (
+        {draftPagination.totalPages > 10 && (
           <div className="hidden lg:flex items-center space-x-3 text-sm">
             <span className="text-stone-500 font-medium">Quick jump:</span>
             <div className="flex items-center space-x-2">
               <input
                 type="number"
                 min="1"
-                max={pagination.totalPages}
+                max={draftPagination.totalPages}
                 placeholder="Page"
                 className="w-16 px-2 py-1 text-center text-xs border border-stone-200/60 rounded-lg focus:border-blue-300 focus:ring-2 focus:ring-blue-200/50 focus:outline-none transition-all duration-200"
                 onKeyPress={(e) => {
                   if (e.key === "Enter") {
                     const page = parseInt(e.target.value);
-                    if (page >= 1 && page <= pagination.totalPages) {
+                    if (page >= 1 && page <= draftPagination.totalPages) {
                       goToPage(page);
                       e.target.value = "";
                     }
@@ -397,7 +398,7 @@ export default function MyTimelines() {
                 onClick={(e) => {
                   const input = e.target.previousElementSibling;
                   const page = parseInt(input.value);
-                  if (page >= 1 && page <= pagination.totalPages) {
+                  if (page >= 1 && page <= draftPagination.totalPages) {
                     goToPage(page);
                     input.value = "";
                   }
@@ -416,20 +417,20 @@ export default function MyTimelines() {
   return (
     <section>
       <div>
-        <StoryCard
-          title="Your stories"
-          secondaryTitle="Where memories find their voice and moments become eternal"
-          data={timelines}
+        <DraftCard
+          title="Your Drafts"
+          secondaryTitle="Where your stories begin to take shape"
+          data={drafts}
           refetch={refreshData}
         />
-        {timelines.length > 0 && <PaginationControls />}
+        {drafts.length > 0 && <PaginationControls />}
       </div>
 
       {isLoading && (
         <LoadingOverlay
           isVisible={isLoading}
-          message="Loading timelines"
-          submessage="Please wait while we load your timelines"
+          message="Loading drafts"
+          submessage="Please wait while we load your drafts"
           variant="slate"
           size="medium"
           showDots={true}
@@ -440,7 +441,7 @@ export default function MyTimelines() {
         <div className="fixed bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-stone-200/50">
           <div className="flex items-center space-x-2 text-sm text-stone-600">
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>Loading more stories...</span>
+            <span>Loading more drafts...</span>
           </div>
         </div>
       )}

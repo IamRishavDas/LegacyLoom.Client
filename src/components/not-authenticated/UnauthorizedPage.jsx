@@ -46,7 +46,7 @@ const UnauthorizedPage = () => {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/20 to-slate-300/15 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/15 to-slate-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-gradient-to-br from-amber-200/10 to-orange-300/10 rounded-full blur-2xl animate-pulse delay-500"></div>
+        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-gradient-to-br from-blue-200/10 to-orange-300/10 rounded-full blur-2xl animate-pulse delay-500"></div>
       </div>
 
       {/* Floating decorative elements */}
@@ -70,7 +70,7 @@ const UnauthorizedPage = () => {
               <div className="w-20 h-20 bg-gradient-to-br from-stone-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-2xl transform rotate-3">
                 <FileText className="w-8 h-8 text-stone-100" />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg transform -rotate-12">
+              <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-blue-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg transform -rotate-12">
                 <Lock className="w-5 h-5 text-white" />
               </div>
             </div>

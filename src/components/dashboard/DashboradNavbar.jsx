@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Home, Plus, LogOut, Menu, X, Snowflake, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { Home, SquarePen, LogOut, Menu, X, Snowflake, Globe, NotebookPen } from 'lucide-react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import LogoutConfirmationModal from '../modals/LogoutConfirmationModal';
 import { useDispatch } from 'react-redux';
@@ -19,7 +19,8 @@ export default function DashboardNavbar() {
     const navItems = [
         { icon: Globe, label: 'Stories', active: location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/'), link: '/dashboard' },
         { icon: Home, label: 'My Timelines', active: location.pathname === '/my-timelines' || location.pathname.startsWith('/my-timelines/'), link: '/my-timelines' },
-        { icon: Plus, label: 'Post', active: location.pathname === '/timeline-editor' || location.pathname.startsWith('/timeline-editor/'), link: '/timeline-editor' }
+        { icon: NotebookPen, label: 'Drafts', active: location.pathname === '/drafts' || location.pathname.startsWith('/drafts/'), link: '/drafts' },
+        { icon: SquarePen, label: 'Post', active: location.pathname === '/timeline-editor' || location.pathname.startsWith('/timeline-editor/'), link: '/timeline-editor' },
     ];
 
     const logout = async () => {

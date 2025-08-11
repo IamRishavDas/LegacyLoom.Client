@@ -11,6 +11,8 @@ import UnauthorizedPage from '../components/not-authenticated/UnauthorizedPage'
 import MyTimelines from '../components/dashboard/my-timelines/MyTimelines'
 import MyTimeline from '../components/dashboard/my-timelines/MyTimeline'
 import PublicTimeline from '../components/dashboard/dashboard-content/PublicTimeline'
+import Drafts from '../components/dashboard/drafts/Drafts'
+import Draft from '../components/dashboard/drafts/Draft'
 
 function AppRoutes() {
   return (
@@ -28,6 +30,8 @@ function AppRoutes() {
             <Route path='/my-timelines/:id' element={<MyTimeline/>}/>
             <Route path='/dashboard/:id' element={<PublicTimeline/>}/>
             <Route path='/timeline-editor' element={<Editor/>}/>
+            <Route path='/drafts' element={<Drafts/>}/>
+            <Route path='/drafts/:id' element={<Draft/>}/>
           </Route>
           <Route path='/not-found' element={<NotFound/>}/>
           <Route path='/not-authorized' element={<UnauthorizedPage/>}/>

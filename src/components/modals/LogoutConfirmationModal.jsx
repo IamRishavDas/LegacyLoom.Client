@@ -120,7 +120,7 @@ const LogoutConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
         <div className="p-6 pb-4">
           <div className="flex items-center justify-center mb-4">
             <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-orange-100 rounded-2xl flex items-center justify-center">
                 <AlertTriangle className="w-8 h-8 text-amber-600" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-stone-600 to-slate-700 rounded-lg flex items-center justify-center shadow-lg">

@@ -142,3 +142,49 @@ export const DislikeTimeline = async (authToken, id) =>{
   return response;
 }
 
+export const CreateDraft = async (formData, authToken) => {
+  const response = await fetch(`${URLS.SAVE_DRAFT}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+    body: formData,
+    // Don't set Content-Type header, let browser set it with boundary for FormData
+  });
+  return response;
+}
+
+export const GetMyDrafts = async (authToken, paginationProperties) => {
+  const response = await fetch(`${URLS.GET_MY_DRAFTS(paginationProperties.pageNumber, paginationProperties.pageSize, paginationProperties.orderBy)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response;
+}
+
+export const GetMyDraftById = async (authToken, timelineId) => {
+  const response = await fetch(`${URLS.GET_MY_DRAFT_BY_ID(timelineId)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response;
+}
+
+export const DeleteDraft = async (authToken, id) => {
+  const response = await fetch(`${URLS.DELETE_DRAFT(id)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    }
+  });
+  return response;
+}
+
+
