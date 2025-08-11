@@ -1,4 +1,5 @@
 export const renderPreview = (text) => {
+    if(!text) return "";
     let rendered = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')

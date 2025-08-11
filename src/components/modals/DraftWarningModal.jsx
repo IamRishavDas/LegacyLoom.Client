@@ -111,20 +111,6 @@ const DraftWarningModal = ({ isOpen, onClose, onConfirm, isLoading = false, imag
           <X size={20} />
         </button>
 
-        {isLoading && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <div className="w-12 h-12 border-4 border-yellow-200 border-t-yellow-600 rounded-full animate-spin"></div>
-              </div>
-              <div className="text-center">
-                <p className="text-stone-700 font-medium">Saving draft...</p>
-                <p className="text-stone-500 text-sm">Please wait</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="p-6 pb-4">
           <div className="flex items-center justify-center mb-4">
             <div className="relative">

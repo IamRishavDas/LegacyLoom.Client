@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Eye, EyeOff, FileText, Image, Upload, X } from 'lucide-react';
+import { Eye, EyeOff, Image, Upload, X, Save } from 'lucide-react';
 import { toast } from "react-toastify";
-import { CreateTimeline } from "../../../apis/apicalls/apicalls";
+import { CreateTimeline, CreateDraft } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
 import { useNavigate } from "react-router-dom";
 import { renderPreview } from "../../../utils/Utils";
+import DraftWarningModal from "../../modals/DraftWarningModal";
 
 const Editor = () => {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ const Editor = () => {
   const [images, setImages] = useState({}); // Store images with unique IDs
   const [imageFiles, setImageFiles] = useState([]); // Store actual File objects for API
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +30,7 @@ const Editor = () => {
       setIsVisible(true);
     }, 200);
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const newValue = e.target.value;
@@ -168,6 +171,85 @@ const Editor = () => {
     return errors;
   };
 
+  const validateDraft = () => {
+    const errors = [];
+
+    if (title.length > 50) {
+      errors.push("Title cannot exceed 50 characters");
+    }
+
+    if (value.length > 2000) {
+      errors.push("Content cannot exceed 2000 characters");
+    }
+
+    return errors;
+  };
+
+  const saveDraft = async () => {
+    if (isSavingDraft) return;
+
+    const validationErrors = validateDraft();
+    if (validationErrors.length > 0) {
+      for (const err of validationErrors) {
+        toast.error(err);
+      }
+      return;
+    }
+
+    setIsSavingDraft(true);
+
+    try {
+      const formData = new FormData();
+      if (title) formData.append('Title', title);
+      if (value) formData.append('Content', value);
+
+      const authToken = localStorage.getItem("token");
+      const response = await CreateDraft(formData, authToken);
+
+      if (response.status === 401) {
+        setIsSavingDraft(false);
+        navigate("/user-login");
+        return;
+      }
+
+      if (response.status === 429) {
+        setIsSavingDraft(false);
+        toast.warn("Too many requests are made");
+        return;
+      }
+
+      if (response.status === 403) {
+        setIsSavingDraft(false);
+        toast.warn("You are unauthorized to perform this operation");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Draft saved successfully");
+        navigate("/drafts");
+        window.location.reload();
+      } else {
+        toast.warn(data.errorMessage || "Failed to save draft");
+      }
+    } catch (error) {
+      toast.error("Network error: Please try again later");
+    } finally {
+      setIsSavingDraft(false);
+      setIsDraftModalOpen(false);
+    }
+  };
+
+  const handleSaveDraftClick = () => {
+    const imageCount = Object.keys(images).length;
+    if (imageCount > 0) {
+      setIsDraftModalOpen(true);
+    } else {
+      saveDraft();
+    }
+  };
+
   const submitStory = async () => {
     if (isSubmitting) return;
 
@@ -182,18 +264,13 @@ const Editor = () => {
     setIsSubmitting(true);
 
     try {
-      // Create FormData object
       const formData = new FormData();
-
-      // Calculate word count
       const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
 
-      // Append story data
       formData.append('Story.Title', title);
       formData.append('Story.Content', value);
       formData.append('Story.WordCount', wordCount.toString());
 
-      // Append image files
       imageFiles.forEach((imageFile, index) => {
         formData.append('Files', imageFile.file);
       });
@@ -213,7 +290,6 @@ const Editor = () => {
         toast.success("Story uploaded successfully");
         navigate("/my-timelines");
         window.location.reload();
-        return;
       } else {
         toast.warn(data.errorMessage);
       }
@@ -231,7 +307,6 @@ const Editor = () => {
     <>
       <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
 
-        {/* Subtle background elements */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/20 to-slate-300/15 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/15 to-slate-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -239,11 +314,9 @@ const Editor = () => {
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative z-10">
           
-          {/* Editor Container */}
           <div className={`transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-stone-200/50 overflow-hidden">
               
-              {/* Toolbar */}
               <div className="border-b border-stone-200/50 bg-stone-50/50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
@@ -299,6 +372,15 @@ const Editor = () => {
                     </button>
 
                     <button 
+                      onClick={handleSaveDraftClick}
+                      disabled={isSavingDraft}
+                      className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg cursor-pointer"
+                    >
+                      <Save size={16} />
+                      <span className="hidden sm:inline ml-2">{isSavingDraft ? 'Saving...' : 'Save as Draft'}</span>
+                    </button>
+
+                    <button 
                       onClick={submitStory}
                       disabled={isSubmitting}
                       className="flex items-center px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg cursor-pointer"
@@ -310,10 +392,8 @@ const Editor = () => {
                 </div>
               </div>
 
-              {/* Editor and Preview Layout */}
               <div className={`grid ${showPreview ? 'lg:grid-cols-2' : 'grid-cols-1'} transition-all duration-300`}>
                 
-                {/* Editor */}
                 <div className="p-6">
                   <div className="mb-4">
                     <input
@@ -342,7 +422,6 @@ Minimum 100 characters and 10 words required."
                     style={{ fontFamily: 'inherit' }}
                   />
 
-                  {/* Image Previews Section */}
                   {imageCount > 0 && (
                     <div className="mt-6 pt-6 border-t border-stone-200/50">
                       <div className="flex items-center space-x-2 mb-4">
@@ -375,7 +454,6 @@ Minimum 100 characters and 10 words required."
                   )}
                 </div>
 
-                {/* Preview */}
                 {showPreview && (
                   <div className="border-l border-stone-200/50 bg-stone-50/30">
                     <div className="p-6">
@@ -395,7 +473,6 @@ Minimum 100 characters and 10 words required."
                         }}
                       />
                       
-                      {/* Preview Images */}
                       {imageCount > 0 && (
                         <div className="mt-8 pt-6 border-t border-stone-300/50">
                           <h4 className="font-serif font-semibold text-stone-800 mb-4 flex items-center space-x-2">
@@ -420,7 +497,6 @@ Minimum 100 characters and 10 words required."
                 )}
               </div>
 
-              {/* Footer */}
               <div className="border-t border-stone-200/50 bg-stone-50/50 px-6 py-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="text-sm text-stone-500">
@@ -439,7 +515,6 @@ Minimum 100 characters and 10 words required."
             </div>
           </div>
 
-          {/* Writing Tips */}
           <div className={`mt-8 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-stone-200/50">
               <h3 className="font-serif font-semibold text-stone-800 mb-3">Writing Tips for Your Legacy</h3>
@@ -460,12 +535,20 @@ Minimum 100 characters and 10 words required."
       </div>
 
       <LoadingOverlay
-        isVisible={isSubmitting}
-        message="Uploading timeline"
-        submessage="Please wait while we upload your timeline"
+        isVisible={isSubmitting || isSavingDraft}
+        message={isSavingDraft ? "Saving draft" : "Uploading timeline"}
+        submessage={isSavingDraft ? "Please wait while we save your draft" : "Please wait while we upload your timeline"}
         variant="slate"
         size="medium"
         showDots={true}
+      />
+
+      <DraftWarningModal
+        isOpen={isDraftModalOpen}
+        onClose={() => setIsDraftModalOpen(false)}
+        onConfirm={saveDraft}
+        isLoading={isSavingDraft}
+        imageCount={imageCount}
       />
     </>
   );

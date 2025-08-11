@@ -132,14 +132,14 @@ function DraftCard(props) {
                   </div>
 
                   <h2 className="text-2xl font-serif font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors duration-200">
-                    {draft.title}
+                    {draft.title == null ? "" : draft.title}
                   </h2>
 
                   <div className="text-gray-600 leading-relaxed mb-4 font-light line-clamp-3">
                     <div
                       className="text-gray-700 leading-relaxed text-lg font-light"
                       dangerouslySetInnerHTML={{
-                        __html: renderPreview(draft.content + "   ...  "),
+                        __html: renderPreview(draft.content == null ? "" : draft.content + "   ...  "),
                       }}
                     />
                   </div>
