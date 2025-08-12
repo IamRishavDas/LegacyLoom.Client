@@ -1,6 +1,6 @@
 
-// const API_BASE_URL = import.meta.env.VITE_LEGACY_LOOM_API_GATEWAY;
-const API_BASE_URL = "https://localhost:7210/gateway/api";
+const API_BASE_URL = import.meta.env.VITE_LEGACY_LOOM_API_GATEWAY;
+// const API_BASE_URL = "https://localhost:7210/gateway/api";
 const URLS = {
     REGISTER: `${API_BASE_URL}/users`,
     LOGIN_USERNAME: `${API_BASE_URL}/auth/login/username`,
