@@ -22,7 +22,7 @@ function HomeNav() {
               </div>
             </Link>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-0">
               <Link to="/user-login">
                 <button
                   className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
