@@ -1,9 +1,12 @@
-import { Clock, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, Eye, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setIsVisible, setCurrentImageIndex, resetStoryCardState } from '../../store/storyCardSlice';
 import { renderPreview } from '../../utils/Utils';
+import { toast } from 'react-toastify';
+import DeleteConfirmationModal from '../modals/DeleteConfirmationModal';
+import { DeleteMyTimeline } from '../../apis/apicalls/apicalls';
 
 function StoryCard(props) {
   const navigate = useNavigate();
@@ -12,8 +15,13 @@ function StoryCard(props) {
   const { isVisible, currentImageIndex } = useSelector((state) => state.storyCard);
   const [pullState, setPullState] = useState('idle'); // idle, pulling, refreshing
   const [pullDistance, setPullDistance] = useState(0);
+  const [openDropdownId, setOpenDropdownId] = useState(null); // Track which dropdown is open
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedStory, setSelectedStory] = useState(null); // Track story for deletion
   const touchStartY = useRef(null);
   const containerRef = useRef(null);
+  const dropdownRefs = useRef({}); // Store refs for each dropdown
 
   useEffect(() => {
     if (!isVisible && !location.state?.fromBackNavigation) {
@@ -73,6 +81,30 @@ function StoryCard(props) {
     };
   }, [pullState, pullDistance, dispatch, props.refetch]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId) {
+        const dropdown = dropdownRefs.current[openDropdownId];
+        if (dropdown && !dropdown.contains(event.target)) {
+          setOpenDropdownId(null);
+        }
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [openDropdownId]);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -85,6 +117,108 @@ function StoryCard(props) {
 
   const handleStoryClick = (story) => {
     navigate(`/my-timelines/${story.id}`, { state: { fromStoryCard: true } });
+  };
+
+  const toggleDropdown = (storyId, event) => {
+    event.stopPropagation(); // Prevent triggering any parent click handlers
+    setOpenDropdownId(openDropdownId === storyId ? null : storyId);
+  };
+
+  // const handleEdit = async (story, event) => {
+  //   event.stopPropagation();
+  //   setOpenDropdownId(null);
+
+  //   const authToken = localStorage.getItem("token");
+  //   if (!authToken) {
+  //     toast.warn("Login to perform this action");
+  //     navigate("/user-login");
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await GetMyTimelineById(authToken, story.id);
+  //     if (response.status === 401) {
+  //       toast.warn("Login to perform this action");
+  //       navigate("/user-login");
+  //       return;
+  //     }
+
+  //     if (response.status === 429) {
+  //       toast.warn("Too many requests are made");
+  //       return;
+  //     }
+
+  //     if (response.status === 403) {
+  //       toast.warn("You are unauthorized to perform this operation");
+  //       return;
+  //     }
+
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       navigate('/timeline-editor', { state: { story: data.data.storyDTO } });
+  //     } else {
+  //       toast.error(data.errorMessage || "Failed to load story");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Network error: Please try again later");
+  //   }
+  // };
+
+  const handleDelete = (story, event) => {
+    event.stopPropagation();
+    setSelectedStory(story);
+    setIsDeleteModalOpen(true);
+    setOpenDropdownId(null);
+  };
+
+  const deleteStory = async () => {
+    if (!selectedStory) return;
+
+    const authToken = localStorage.getItem("token");
+
+    if (!authToken) {
+      toast.warn("Login to perform this action");
+      navigate("/user-login");
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await DeleteMyTimeline(authToken, selectedStory.id);
+
+      if (response.status === 429) {
+        toast.warn("Too many requests are made");
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.warn("You are unauthorized to perform this operation");
+        return;
+      }
+
+      if (response.status === 401) {
+        toast.warn("Login to perform this action");
+        navigate("/user-login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Story deleted successfully");
+        if (props.refetch) props.refetch();
+        navigate("/my-timelines");
+      } else {
+        toast.error(data.errorMessage || "Failed to delete story");
+      }
+    } catch (error) {
+      toast.error("Network error: Please try again later");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+      setSelectedStory(null);
+    }
   };
 
   const nextImage = (storyId, totalImages, e) => {
@@ -144,18 +278,46 @@ function StoryCard(props) {
                 }`}
                 style={{ transitionDelay: `${index * 200}ms` }}
               >
-                <div className="p-6 pb-4">
+                <div className="p-6 pb-4 relative">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div>
-                        <div className="flex items-center text-sm text-gray-500 space-x-2">
-                          <Clock size={14} />
-                          <span>{formatDate(story.lastModified)}</span>
-                          <span>•</span>
-                          <Eye size={14} />
-                          <span>{story.visibility.toLowerCase()}</span>
-                        </div>
+                      <div className="flex items-center text-sm text-gray-500 space-x-2">
+                        <Clock size={14} />
+                        <span>{formatDate(story.lastModified)}</span>
+                        <span>•</span>
+                        <Eye size={14} />
+                        <span>{story.visibility.toLowerCase()}</span>
                       </div>
+                    </div>
+                    <div className="relative">
+                      <button
+                        onClick={(e) => toggleDropdown(story.id, e)}
+                        className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-stone-300 cursor-pointer"
+                        aria-label="Story options"
+                      >
+                        <MoreHorizontal size={20} />
+                      </button>
+                      {openDropdownId === story.id && (
+                        <div
+                          ref={(el) => (dropdownRefs.current[story.id] = el)}
+                          className="absolute right-0 top-10 z-30 w-48 bg-white border border-stone-200 shadow-lg rounded-lg overflow-hidden"
+                        >
+                          {/* <button
+                            onClick={(e) => handleEdit(story, e)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 transition-colors duration-200 focus:outline-none focus:bg-stone-100 cursor-pointer"
+                          >
+                            <Edit2 size={16} className="mr-2 text-stone-600" />
+                            Edit Story
+                          </button> */}
+                          <button
+                            onClick={(e) => handleDelete(story, e)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 transition-colors duration-200 focus:outline-none focus:bg-stone-100 cursor-pointer"
+                          >
+                            <Trash2 size={16} className="mr-2 text-red-600" />
+                            Delete Story
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -250,6 +412,17 @@ function StoryCard(props) {
           </div>
         )}
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedStory(null);
+        }}
+        onConfirm={deleteStory}
+        isLoading={isDeleting}
+        storyTitle={selectedStory?.storyDTO?.title || "this story"}
+      />
     </div>
   );
 }

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { DeleteMyTimeline, GetMyTimelineById } from "../../../apis/apicalls/apicalls";
+import { GetMyTimelineById } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
-import { Clock, Eye, Trash2 } from "lucide-react";
+import { Clock, Eye } from "lucide-react";
 import { toast } from "react-toastify";
 import ImageModal from "../../modals/ImageModal";
-import DeleteConfirmationModal from "../../modals/DeleteConfirmationModal";
 import { renderPreview } from "../../../utils/Utils";
 
 export default function MyTimeline() {
@@ -15,8 +14,6 @@ export default function MyTimeline() {
   const [story, setStory] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -37,67 +34,6 @@ export default function MyTimeline() {
     setIsModalOpen(false);
   };
 
-  const openDeleteModal = () => {
-    setIsDeleteModalOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  // Add your delete API call function here
-  const deleteStory = async () => {
-    const authToken = localStorage.getItem("token");
-    
-    if (!authToken) {
-      toast.warn("Login to perform this action");
-      navigate("/user-login");
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      // Replace this with your actual delete API call
-      const response = await DeleteMyTimeline(authToken, id);
-
-      if (response.status === 429) {
-        toast.warn("Too many requests are made");
-        return;
-      }
-
-      if(response.state === 403){
-        toast.warn("You are unauthorized to perform this operation");
-        return;
-      }
-
-      if (response.status === 401) {
-        toast.warn("Login to perform this action");
-        navigate("/user-login");
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setIsDeleting(false);
-        setIsDeleteModalOpen(false);
-        navigate("/my-timelines");
-        window.location.reload();
-        toast.success("Story deleted successfully");
-        return;
-      } else {
-        toast.error(data.errorMessage || "Failed to delete story");
-      }
-    } catch (error) {
-        setIsDeleting(false);
-        setIsDeleteModalOpen(false);
-        toast.error("Network error: Please check your network connection or try again later");
-    } finally {
-        setIsDeleting(false);
-        setIsDeleteModalOpen(false);
-    }
-  };
 
   useEffect(() => {
     const getData = async () => {
@@ -192,14 +128,14 @@ export default function MyTimeline() {
               <span>Back to Stories</span>
             </button>
 
-            <button
+            {/* <button
               style={{ cursor: "pointer" }}
               onClick={openDeleteModal}
               className="flex items-center space-x-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
             >
               <Trash2 size={16} />
               <span>Delete Story</span>
-            </button>
+            </button> */}
           </div>
 
           {/* Story Detail */}
@@ -294,15 +230,6 @@ export default function MyTimeline() {
             images={story?.storyDTO?.medias?.images || []}
             initialIndex={selectedImageIndex}
             onClose={closeImageModal}
-          />
-
-          {/* Delete Confirmation Modal */}
-          <DeleteConfirmationModal
-            isOpen={isDeleteModalOpen}
-            onClose={closeDeleteModal}
-            onConfirm={deleteStory}
-            isLoading={isDeleting}
-            storyTitle={story?.storyDTO?.title || "this story"}
           />
         </div>
       </div>
