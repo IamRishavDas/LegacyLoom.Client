@@ -1,9 +1,12 @@
-import { Clock } from 'lucide-react';
+import { Clock, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setIsVisible, resetStoryCardState } from '../../../store/storyCardSlice';
 import { renderPreview } from '../../../utils/Utils';
+import { toast } from 'react-toastify';
+import DeleteConfirmationModal from '../../modals/DeleteConfirmationModal';
+import { DeleteDraft } from '../../../apis/apicalls/apicalls';
 
 function DraftCard(props) {
   const navigate = useNavigate();
@@ -12,8 +15,13 @@ function DraftCard(props) {
   const { isVisible } = useSelector((state) => state.storyCard);
   const [pullState, setPullState] = useState('idle'); // idle, pulling, refreshing
   const [pullDistance, setPullDistance] = useState(0);
+  const [openDropdownId, setOpenDropdownId] = useState(null); // Track which dropdown is open
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedDraft, setSelectedDraft] = useState(null); // Track draft for deletion
   const touchStartY = useRef(null);
   const containerRef = useRef(null);
+  const dropdownRefs = useRef({}); // Store refs for each dropdown
 
   useEffect(() => {
     if (!isVisible && !location.state?.fromBackNavigation) {
@@ -73,6 +81,30 @@ function DraftCard(props) {
     };
   }, [pullState, pullDistance, dispatch, props.refetch]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId) {
+        const dropdown = dropdownRefs.current[openDropdownId];
+        if (dropdown && !dropdown.contains(event.target)) {
+          setOpenDropdownId(null);
+        }
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [openDropdownId]);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -85,6 +117,75 @@ function DraftCard(props) {
 
   const handleDraftClick = (draft) => {
     navigate(`/drafts/${draft.id}`, { state: { fromStoryCard: true } });
+  };
+
+  const toggleDropdown = (draftId, event) => {
+    event.stopPropagation(); // Prevent triggering any parent click handlers
+    setOpenDropdownId(openDropdownId === draftId ? null : draftId);
+  };
+
+  const handleEdit = (draft, event) => {
+    event.stopPropagation();
+    setOpenDropdownId(null);
+    // TODO: Implement edit functionality, e.g., navigate to editor with prefilled draft data
+    toast.info("Edit functionality coming soon");
+  };
+
+  const handleDelete = (draft, event) => {
+    event.stopPropagation();
+    setSelectedDraft(draft);
+    setIsDeleteModalOpen(true);
+    setOpenDropdownId(null);
+  };
+
+  const deleteDraft = async () => {
+    if (!selectedDraft) return;
+
+    const authToken = localStorage.getItem("token");
+
+    if (!authToken) {
+      toast.warn("Login to perform this action");
+      navigate("/user-login");
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await DeleteDraft(authToken, selectedDraft.id);
+
+      if (response.status === 429) {
+        toast.warn("Too many requests are made");
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.warn("You are unauthorized to perform this operation");
+        return;
+      }
+
+      if (response.status === 401) {
+        toast.warn("Login to perform this action");
+        navigate("/user-login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Draft deleted successfully");
+        if (props.refetch) props.refetch();
+        navigate("/drafts");
+      } else {
+        toast.error(data.errorMessage || "Failed to delete draft");
+      }
+    } catch (error) {
+      toast.error("Network error: Please try again later");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+      setSelectedDraft(null);
+    }
   };
 
   return (
@@ -121,25 +222,55 @@ function DraftCard(props) {
                 }`}
                 style={{ transitionDelay: `${index * 200}ms` }}
               >
-                <div className="p-6 pb-4">
+                <div className="p-6 pb-4 relative">
                   <div className="flex items-center justify-between mb-4">
-                    <div>
+                    <div className="flex items-center space-x-3">
                       <div className="flex items-center text-sm text-gray-500 space-x-2">
                         <Clock size={14} />
                         <span>{formatDate(draft.lastModified)}</span>
                       </div>
                     </div>
+                    <div className="relative">
+                      <button
+                        onClick={(e) => toggleDropdown(draft.id, e)}
+                        className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-stone-300 cursor-pointer"
+                        aria-label="Draft options"
+                      >
+                        <MoreHorizontal size={20} />
+                      </button>
+                      {openDropdownId === draft.id && (
+                        <div
+                          ref={(el) => (dropdownRefs.current[draft.id] = el)}
+                          className="absolute right-0 top-10 z-30 w-48 bg-white border border-stone-200 shadow-lg rounded-lg overflow-hidden"
+                        >
+                          <button
+                            onClick={(e) => handleEdit(draft, e)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 transition-colors duration-200 focus:outline-none focus:bg-stone-100 cursor-pointer"
+                          >
+                            <Edit2 size={16} className="mr-2 text-stone-600" />
+                            Edit Draft
+                          </button>
+                          <button
+                            onClick={(e) => handleDelete(draft, e)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 transition-colors duration-200 focus:outline-none focus:bg-stone-100 cursor-pointer"
+                          >
+                            <Trash2 size={16} className="mr-2 text-red-600" />
+                            Delete Draft
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <h2 className="text-2xl font-serif font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors duration-200">
-                    {draft.title == null ? "" : draft.title}
+                    {draft.title == null ? "Untitled Draft" : draft.title}
                   </h2>
 
                   <div className="text-gray-600 leading-relaxed mb-4 font-light line-clamp-3">
                     <div
                       className="text-gray-700 leading-relaxed text-lg font-light"
                       dangerouslySetInnerHTML={{
-                        __html: renderPreview(draft.content == null ? "" : draft.content + "   ...  "),
+                        __html: renderPreview(draft.content == null ? "No content available..." : draft.content + "   ...  "),
                       }}
                     />
                   </div>
@@ -159,6 +290,17 @@ function DraftCard(props) {
           </div>
         )}
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedDraft(null);
+        }}
+        onConfirm={deleteDraft}
+        isLoading={isDeleting}
+        storyTitle={selectedDraft?.title || "this draft"}
+      />
     </div>
   );
 }

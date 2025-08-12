@@ -1,19 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
-import { Clock, Trash2 } from "lucide-react";
+import { Clock } from "lucide-react";
 import { toast } from "react-toastify";
-import DeleteConfirmationModal from "../../modals/DeleteConfirmationModal";
 import { renderPreview } from "../../../utils/Utils";
-import { DeleteDraft, GetMyDraftById } from "../../../apis/apicalls/apicalls";
+import { GetMyDraftById } from "../../../apis/apicalls/apicalls";
 
 export default function Draft() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [draft, setDraft] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -25,62 +22,6 @@ export default function Draft() {
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-  const openDeleteModal = () => {
-    setIsDeleteModalOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  const deleteDraft = async () => {
-    const authToken = localStorage.getItem("token");
-
-    if (!authToken) {
-      toast.warn("Login to perform this action");
-      navigate("/user-login");
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      const response = await DeleteDraft(authToken, id);
-
-      if (response.status === 429) {
-        toast.warn("Too many requests are made");
-        return;
-      }
-
-      if (response.status === 403) {
-        toast.warn("You are unauthorized to perform this operation");
-        return;
-      }
-
-      if (response.status === 401) {
-        toast.warn("Login to perform this action");
-        navigate("/user-login");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setIsDeleting(false);
-        setIsDeleteModalOpen(false);
-        navigate("/drafts");
-        toast.success("Draft deleted successfully");
-        window.location.reload();
-      } else {
-        toast.error(data.errorMessage || "Failed to delete draft");
-      }
-    } catch (error) {
-      toast.error("Network error: Please try again later");
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteModalOpen(false);
-    }
-  };
 
   useEffect(() => {
     const getData = async () => {
@@ -174,15 +115,6 @@ export default function Draft() {
               </svg>
               <span>Back to Drafts</span>
             </button>
-
-            <button
-              style={{ cursor: "pointer" }}
-              onClick={openDeleteModal}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
-            >
-              <Trash2 size={16} />
-              <span>Delete Draft</span>
-            </button>
           </div>
 
           {/* Draft Detail */}
@@ -213,15 +145,6 @@ export default function Draft() {
               </div>
             </div>
           </article>
-
-          {/* Delete Confirmation Modal */}
-          <DeleteConfirmationModal
-            isOpen={isDeleteModalOpen}
-            onClose={closeDeleteModal}
-            onConfirm={deleteDraft}
-            isLoading={isDeleting}
-            storyTitle={draft.title || "this draft"}
-          />
         </div>
       </div>
     </section>
