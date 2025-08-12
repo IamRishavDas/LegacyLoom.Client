@@ -3,14 +3,16 @@ import { Eye, EyeOff, Image, Upload, X, Save } from 'lucide-react';
 import { toast } from "react-toastify";
 import { CreateTimeline, CreateDraft } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { renderPreview } from "../../../utils/Utils";
 import DraftWarningModal from "../../modals/DraftWarningModal";
 
 const Editor = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
+  const [draftId, setDraftId] = useState(null); // Store draft ID for updates
   const [showPreview, setShowPreview] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [images, setImages] = useState({}); // Store images with unique IDs
@@ -19,6 +21,20 @@ const Editor = () => {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Prefill editor with draft data if provided
+  useEffect(() => {
+    const draft = location.state?.draft;
+    if (draft) {
+      setDraftId(draft.id || null);
+      setTitle(draft.title || "");
+      setValue(draft.content || "");
+      // Clear images and sessionStorage since drafts don't include images
+      setImages({});
+      setImageFiles([]);
+      sessionStorage.removeItem('story-editor-images');
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (localStorage.getItem("token") === null) {
@@ -200,6 +216,7 @@ const Editor = () => {
 
     try {
       const formData = new FormData();
+      if (draftId) formData.append('Id', draftId); // Include ID for updates
       if (title) formData.append('Title', title);
       if (value) formData.append('Content', value);
 
@@ -227,7 +244,7 @@ const Editor = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast.success("Draft saved successfully");
+        toast.success(draftId ? "Draft updated successfully" : "Draft saved successfully");
         navigate("/drafts");
         window.location.reload();
       } else {

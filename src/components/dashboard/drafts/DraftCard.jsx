@@ -6,7 +6,7 @@ import { setIsVisible, resetStoryCardState } from '../../../store/storyCardSlice
 import { renderPreview } from '../../../utils/Utils';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../../modals/DeleteConfirmationModal';
-import { DeleteDraft } from '../../../apis/apicalls/apicalls';
+import { DeleteDraft, GetMyDraftById } from '../../../apis/apicalls/apicalls';
 
 function DraftCard(props) {
   const navigate = useNavigate();
@@ -124,11 +124,44 @@ function DraftCard(props) {
     setOpenDropdownId(openDropdownId === draftId ? null : draftId);
   };
 
-  const handleEdit = (draft, event) => {
+  const handleEdit = async (draft, event) => {
     event.stopPropagation();
     setOpenDropdownId(null);
-    // TODO: Implement edit functionality, e.g., navigate to editor with prefilled draft data
-    toast.info("Edit functionality coming soon");
+    
+    const authToken = localStorage.getItem("token");
+    if (!authToken) {
+      toast.warn("Login to perform this action");
+      navigate("/user-login");
+      return;
+    }
+
+    try {
+      const response = await GetMyDraftById(authToken, draft.id);
+      if (response.status === 401) {
+        toast.warn("Login to perform this action");
+        navigate("/user-login");
+        return;
+      }
+
+      if (response.status === 429) {
+        toast.warn("Too many requests are made");
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.warn("You are unauthorized to perform this operation");
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        navigate('/timeline-editor', { state: { draft: data.data } });
+      } else {
+        toast.error(data.errorMessage || "Failed to load draft");
+      }
+    } catch (error) {
+      toast.error("Network error: Please try again later");
+    }
   };
 
   const handleDelete = (draft, event) => {
@@ -280,7 +313,7 @@ function DraftCard(props) {
                     className="w-fit text-blue-600 text-sm font-medium flex items-center space-x-1 cursor-pointer hover:underline"
                   >
                     <span>Read full draft</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
