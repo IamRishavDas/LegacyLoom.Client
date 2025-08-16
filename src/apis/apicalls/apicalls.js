@@ -187,4 +187,14 @@ export const DeleteDraft = async (authToken, id) => {
   return response;
 }
 
-
+export const UpdateDraft = async (draftId, formData, authToken) => {
+  const response = await fetch(`${URLS.UPDATE_DRAFT(draftId)}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+    body: formData,
+    // Don't set Content-Type header, let browser set it with boundary for FormData
+  });
+  return response;
+}

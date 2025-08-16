@@ -313,7 +313,7 @@ function DraftCard(props) {
                     className="w-fit text-blue-600 text-sm font-medium flex items-center space-x-1 cursor-pointer hover:underline"
                   >
                     <span>Read full draft</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>

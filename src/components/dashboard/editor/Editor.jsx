@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff, Image, Upload, X, Save } from 'lucide-react';
 import { toast } from "react-toastify";
-import { CreateTimeline, CreateDraft } from "../../../apis/apicalls/apicalls";
+import { CreateTimeline, CreateDraft, UpdateDraft } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
 import { useNavigate, useLocation } from "react-router-dom";
 import { renderPreview } from "../../../utils/Utils";
@@ -221,7 +221,14 @@ const Editor = () => {
       if (value) formData.append('Content', value);
 
       const authToken = localStorage.getItem("token");
-      const response = await CreateDraft(formData, authToken);
+
+      if(!authToken){
+        navigate("/user-login");
+        toast.info("Login to perform this operation");
+        return;
+      }
+
+      const response = draftId ? await UpdateDraft(draftId, formData, authToken) : await CreateDraft(formData, authToken);
 
       if (response.status === 401) {
         setIsSavingDraft(false);
@@ -323,17 +330,14 @@ const Editor = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 relative overflow-hidden">
-
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/20 to-slate-300/15 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/15 to-slate-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative z-10">
-          
           <div className={`transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-stone-200/50 overflow-hidden">
-              
               <div className="border-b border-stone-200/50 bg-stone-50/50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
@@ -378,7 +382,6 @@ const Editor = () => {
                       className="hidden"
                     />
                   </div>
-                  
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowPreview(!showPreview)}
@@ -387,17 +390,15 @@ const Editor = () => {
                       {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
                       <span className="hidden sm:inline ml-2">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
                     </button>
-
-                    <button 
+                    <button
                       onClick={handleSaveDraftClick}
                       disabled={isSavingDraft}
                       className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg cursor-pointer"
                     >
                       <Save size={16} />
-                      <span className="hidden sm:inline ml-2">{isSavingDraft ? 'Saving...' : 'Save as Draft'}</span>
+                      <span className="hidden sm:inline ml-2">{isSavingDraft ? 'Saving...' : draftId ? 'Update Draft' : 'Save as Draft'}</span>
                     </button>
-
-                    <button 
+                    <button
                       onClick={submitStory}
                       disabled={isSubmitting}
                       className="flex items-center px-4 py-2 bg-gradient-to-r from-stone-600 to-slate-600 hover:from-stone-700 hover:to-slate-700 disabled:from-stone-400 disabled:to-slate-400 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-lg cursor-pointer"
@@ -408,9 +409,7 @@ const Editor = () => {
                   </div>
                 </div>
               </div>
-
               <div className={`grid ${showPreview ? 'lg:grid-cols-2' : 'grid-cols-1'} transition-all duration-300`}>
-                
                 <div className="p-6">
                   <div className="mb-4">
                     <input
@@ -438,7 +437,6 @@ Minimum 100 characters and 10 words required."
                     className="w-full h-96 md:h-[500px] text-stone-700 placeholder-stone-400 bg-transparent border-none outline-none resize-none focus:ring-0 leading-relaxed text-base"
                     style={{ fontFamily: 'inherit' }}
                   />
-
                   {imageCount > 0 && (
                     <div className="mt-6 pt-6 border-t border-stone-200/50">
                       <div className="flex items-center space-x-2 mb-4">
@@ -470,7 +468,6 @@ Minimum 100 characters and 10 words required."
                     </div>
                   )}
                 </div>
-
                 {showPreview && (
                   <div className="border-l border-stone-200/50 bg-stone-50/30">
                     <div className="p-6">
@@ -483,13 +480,12 @@ Minimum 100 characters and 10 words required."
                           <h1 className="text-3xl font-serif font-bold text-stone-800 mb-6">{title}</h1>
                         )}
                       </div>
-                      <div 
+                      <div
                         className="prose prose-stone max-w-none text-stone-700 leading-relaxed"
-                        dangerouslySetInnerHTML={{ 
-                          __html: renderPreview(value) || '<p class="text-stone-400 italic">Your story will appear here as you write...</p>' 
+                        dangerouslySetInnerHTML={{
+                          __html: renderPreview(value) || '<p class="text-stone-400 italic">Your story will appear here as you write...</p>'
                         }}
                       />
-                      
                       {imageCount > 0 && (
                         <div className="mt-8 pt-6 border-t border-stone-300/50">
                           <h4 className="font-serif font-semibold text-stone-800 mb-4 flex items-center space-x-2">
@@ -513,12 +509,11 @@ Minimum 100 characters and 10 words required."
                   </div>
                 )}
               </div>
-
               <div className="border-t border-stone-200/50 bg-stone-50/50 px-6 py-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="text-sm text-stone-500">
-                    <span className="font-medium">{value.length}/2000</span> characters • 
-                    <span className="font-medium">{wordCount}</span> words • 
+                    <span className="font-medium">{value.length}/2000</span> characters •
+                    <span className="font-medium">{wordCount}</span> words •
                     <span className="font-medium">{imageCount}/4</span> images
                   </div>
                   <div className="flex items-center space-x-4 text-sm text-stone-500">
@@ -531,7 +526,6 @@ Minimum 100 characters and 10 words required."
               </div>
             </div>
           </div>
-
           <div className={`mt-8 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-stone-200/50">
               <h3 className="font-serif font-semibold text-stone-800 mb-3">Writing Tips for Your Legacy</h3>
@@ -550,16 +544,14 @@ Minimum 100 characters and 10 words required."
           </div>
         </div>
       </div>
-
       <LoadingOverlay
         isVisible={isSubmitting || isSavingDraft}
-        message={isSavingDraft ? "Saving draft" : "Uploading timeline"}
-        submessage={isSavingDraft ? "Please wait while we save your draft" : "Please wait while we upload your timeline"}
+        message={isSavingDraft ? (draftId ? "Updating draft" : "Saving draft") : "Uploading timeline"}
+        submessage={isSavingDraft ? (draftId ? "Please wait while we update your draft" : "Please wait while we save your draft") : "Please wait while we upload your timeline"}
         variant="slate"
         size="medium"
         showDots={true}
       />
-
       <DraftWarningModal
         isOpen={isDraftModalOpen}
         onClose={() => setIsDraftModalOpen(false)}

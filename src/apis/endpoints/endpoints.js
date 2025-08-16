@@ -19,7 +19,7 @@ const URLS = {
     GET_MY_DRAFTS: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/drafts?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`,
     GET_MY_DRAFT_BY_ID: (id) => `${API_BASE_URL}/drafts/${id}`,
     DELETE_DRAFT: (id) => `${API_BASE_URL}/drafts/${id}`,
-
+    UPDATE_DRAFT: (id) => `${API_BASE_URL}/drafts/${id}`
 }
 
 export default URLS;
