@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LoginUsingEmail, LoginUsingUsername } from '../../apis/apicalls/apicalls';
 import { toast } from 'react-toastify';
+import { Eye, EyeOff } from 'lucide-react'; // Import Lucide React eye icons
 import LoadingOverlay from '../loading-overlay/LoadingOverlay';
 
 export default function UserLoginPage() {
@@ -17,6 +18,7 @@ export default function UserLoginPage() {
     });
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
+    const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -47,7 +49,6 @@ export default function UserLoginPage() {
     const handleInputChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         
-        // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
@@ -74,10 +75,10 @@ export default function UserLoginPage() {
 
     const handleLoginTypeChange = (type) => {
         setLoginType(type);
-        // Clear form data and errors when switching
         setFormData({ username: '', email: '', password: '' });
         setErrors({});
         setTouched({});
+        setShowPassword(false); // Reset password visibility on login type change
     };
 
     const saveCredentialsToLocalStorage = (data) => {
@@ -85,7 +86,7 @@ export default function UserLoginPage() {
         localStorage.setItem("userName", data.userName);
         localStorage.setItem("email", data.email);
         localStorage.setItem("token", data.token);
-    }
+    };
 
     const handleSubmit = async () => {
         let identifierError = '';
@@ -137,7 +138,6 @@ export default function UserLoginPage() {
 
     return (
         <section ref={formRef} className="h-screen pt-0 pb-0 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center">
-            {/* Background decorative elements */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/30 to-slate-300/20 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute top-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/20 to-slate-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -146,27 +146,18 @@ export default function UserLoginPage() {
             
             <div className="max-w-md w-full relative">
                 <div className={`transition-all duration-1200 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-                    
-                    {/* Header */}
                     <div className="text-center mb-8">
                         <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-4 leading-tight">
                             Welcome Back
-                            <span className="block text-stone-600 mt-2 bg-gradient-to-r from-stone-600 via-stone-700 to-slate-600 bg-clip-text">
-                                to Legacy Loom
-                            </span>
                         </h1>
                         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent rounded-full mx-auto mb-6"></div>
-                        <p className="text-lg text-stone-600 font-light">
-                            Continue your storytelling journey
-                        </p>
                     </div>
 
-                    {/* Login Type Selector */}
                     <div className="mb-8">
                         <div className="flex bg-stone-100/80 rounded-xl p-1 backdrop-blur-sm border border-stone-200/50">
                             <button
                                 onClick={() => handleLoginTypeChange('username')}
-                                style={{cursor: "pointer"}}
+                                style={{ cursor: "pointer" }}
                                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
                                     loginType === 'username'
                                         ? 'bg-white text-stone-800 shadow-lg'
@@ -177,7 +168,7 @@ export default function UserLoginPage() {
                             </button>
                             <button
                                 onClick={() => handleLoginTypeChange('email')}
-                                style={{cursor: "pointer"}}
+                                style={{ cursor: "pointer" }}
                                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
                                     loginType === 'email'
                                         ? 'bg-white text-stone-800 shadow-lg'
@@ -189,11 +180,8 @@ export default function UserLoginPage() {
                         </div>
                     </div>
 
-                    {/* Form */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-stone-200/50 p-8">
                         <div className="space-y-6">
-                            
-                            {/* Username/Email Field */}
                             <div>
                                 <label htmlFor="identifier" className="block text-sm font-medium text-stone-700 mb-2">
                                     {loginType === 'username' ? 'Username' : 'Email Address'}
@@ -216,37 +204,38 @@ export default function UserLoginPage() {
                                 )}
                             </div>
 
-                            {/* Password Field */}
-                            <div>
+                            <div className="relative">
                                 <label htmlFor="password" className="block text-sm font-medium text-stone-700 mb-2">
                                     Password
                                 </label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={(e) => handleInputChange('password', e.target.value)}
-                                    onBlur={() => handleBlur('password')}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-stone-400/50 ${
-                                        errors.password && touched.password
-                                            ? 'border-red-300 bg-red-50/50'
-                                            : 'border-stone-200 bg-stone-50/50 hover:border-stone-300 focus:border-stone-400'
-                                    }`}
-                                    placeholder="Enter your password"
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={formData.password}
+                                        onChange={(e) => handleInputChange('password', e.target.value)}
+                                        onBlur={() => handleBlur('password')}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-stone-400/50 pr-12 ${
+                                            errors.password && touched.password
+                                                ? 'border-red-300 bg-red-50/50'
+                                                : 'border-stone-200 bg-stone-50/50 hover:border-stone-300 focus:border-stone-400'
+                                        }`}
+                                        placeholder="Enter your password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-600 hover:text-stone-800 transition-colors duration-200 z-10 cursor-pointer"
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+                                </div>
                                 {errors.password && touched.password && (
                                     <p className="mt-2 text-sm text-red-600 animate-pulse">{errors.password}</p>
                                 )}
                             </div>
 
-                            {/* Forgot Password Link */}
-                            {/* <div className="text-right">
-                                <button className="text-sm text-stone-600 hover:text-stone-800 font-medium transition-colors duration-200">
-                                    Forgot password?
-                                </button>
-                            </div> */}
-
-                            {/* Submit Button */}
                             <div
                                 onClick={handleSubmit}
                                 className={`w-full py-3 px-6 rounded-xl font-medium text-white transition-all duration-300 transform hover:scale-105 focus:outline-none cursor-pointer text-center ${
@@ -266,14 +255,13 @@ export default function UserLoginPage() {
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <div className="mt-8 text-center">
                             <p className="text-sm text-stone-500">
                                 Don't have an account?{' '}
                                 <Link to={"/register"}>
-                                  <button className="text-stone-600 hover:text-stone-800 font-medium transition-colors duration-200 cursor-pointer">
-                                      Create one here
-                                  </button>
+                                    <button className="text-stone-600 hover:text-stone-800 font-medium transition-colors duration-200 cursor-pointer">
+                                        Create one here
+                                    </button>
                                 </Link>
                             </p>
                         </div>
@@ -281,13 +269,13 @@ export default function UserLoginPage() {
                 </div>
             </div>
             <LoadingOverlay
-                    isVisible={isLoading}
-                    message="Verifying"
-                    submessage="Please wait while we verify your credentials"
-                    variant="slate"
-                    size="medium"
-                    showDots={true}
-                  />
+                isVisible={isLoading}
+                message="Verifying"
+                submessage="Please wait while we verify your credentials"
+                variant="slate"
+                size="medium"
+                showDots={true}
+            />
         </section>
     );
 }

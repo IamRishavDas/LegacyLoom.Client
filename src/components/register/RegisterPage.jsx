@@ -3,7 +3,7 @@ import { Register } from "../../apis/apicalls/apicalls";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingOverlay from "../loading-overlay/LoadingOverlay";
 import { toast } from "react-toastify";
-import HomeNav from "../home/HomeNav";
+import { Eye, EyeOff } from 'lucide-react'; // Import Lucide React eye icons
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -13,10 +13,11 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: "",
+    password: ""
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   useEffect(() => {
     // Prevent body scrolling
@@ -116,7 +117,8 @@ export default function RegisterPage() {
       if (data.success) {
         setIsLoading(false);
         toast.success(
-          data.successMessage == null ? "User registerd successfully" : data.successMessage + " redirecting to login page");
+          data.successMessage == null ? "User registered successfully" : data.successMessage + " redirecting to login page"
+        );
         navigate("/user-login");
       } else {
         setIsLoading(false);
@@ -155,9 +157,6 @@ export default function RegisterPage() {
               </span>
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent rounded-full mx-auto mb-6"></div>
-            <p className="text-lg text-stone-600 font-light">
-              Begin your journey of gentle storytelling
-            </p>
           </div>
 
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-stone-200/50 p-8">
@@ -218,36 +217,43 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div>
+              <div className="relative">
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-stone-700 mb-2"
                 >
                   Password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange("password", e.target.value)
-                  }
-                  onBlur={() => handleBlur("password")}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-stone-400/50 ${
-                    errors.password && touched.password
-                      ? "border-red-300 bg-red-50/50"
-                      : "border-stone-200 bg-stone-50/50 hover:border-stone-300 focus:border-stone-400"
-                  }`}
-                  placeholder="Create a secure password"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onBlur={() => handleBlur("password")}
+                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-stone-400/50 pr-12 ${
+                      errors.password && touched.password
+                        ? "border-red-300 bg-red-50/50"
+                        : "border-stone-200 bg-stone-50/50 hover:border-stone-300 focus:border-stone-400"
+                    }`}
+                    placeholder="Create a secure password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-600 hover:text-stone-800 transition-colors duration-200 z-10 cursor-pointer"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 {errors.password && touched.password && (
                   <p className="mt-2 text-sm text-red-600 animate-pulse">
                     {errors.password}
                   </p>
                 )}
                 <p className="mt-2 text-xs text-stone-500">
-                  Must be 8-15 characters with uppercase, number, and special
-                  character
+                  Must be 8-15 characters with uppercase, number, and special character
                 </p>
               </div>
 

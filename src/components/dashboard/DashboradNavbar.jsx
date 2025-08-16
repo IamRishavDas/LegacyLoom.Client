@@ -67,10 +67,7 @@ export default function DashboardNavbar() {
                         
                         {/* Logo */}
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-stone-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
-                                <Snowflake className="w-5 h-5 text-stone-100" />
-                            </div>
-                            <span className="text-xl font-serif font-semibold text-stone-800">Legacy Loom</span>
+                          <span className="text-xl font-serif font-semibold text-stone-800">Legacy Loom</span>
                         </div>
 
                         {/* Desktop Navigation */}
