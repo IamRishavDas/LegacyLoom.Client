@@ -14,6 +14,7 @@ export default function LoadingOverlay({
 }) {
   const [dots, setDots] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (isVisible) {
@@ -45,36 +46,80 @@ export default function LoadingOverlay({
     return () => clearInterval(interval);
   }, [showDots, isVisible]);
 
+  useEffect(() => {
+    if (!isVisible || !showSpinner) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) return 0;
+        return prev + 1; // Increment by 1% every 40ms for a 4s cycle
+      });
+    }, 40);
+
+    return () => clearInterval(interval);
+  }, [isVisible, showSpinner]);
+
   if (!isVisible && !isAnimating) return null;
 
   const sizeClasses = {
-    small: "w-12 h-12 border-2",
-    medium: "w-16 h-16 border-3",
-    large: "w-20 h-20 border-4",
+    small: {
+      barWidth: "w-48",
+      barHeight: "h-2",
+      container: "w-48",
+    },
+    medium: {
+      barWidth: "w-64",
+      barHeight: "h-3",
+      container: "w-64",
+    },
+    large: {
+      barWidth: "w-80",
+      barHeight: "h-4",
+      container: "w-80",
+    },
   };
 
   const variantClasses = {
     blue: {
       background: "bg-white/80",
-      spinner: "border-gray-300 border-t-blue-500",
+      bar: "bg-gradient-to-r from-blue-400 to-blue-600",
+      track: "bg-gray-200",
       text: "text-gray-800",
       subtext: "text-gray-600",
+      glow: "shadow-[0_0_8px_rgba(59,130,246,0.5)]",
     },
     gray: {
       background: "bg-white/80",
-      spinner: "border-gray-300 border-t-gray-600",
+      bar: "bg-gradient-to-r from-gray-500 to-gray-700",
+      track: "bg-gray-200",
       text: "text-gray-800",
       subtext: "text-gray-600",
+      glow: "shadow-[0_0_8px_rgba(75,85,99,0.5)]",
     },
     dark: {
       background: "bg-black/50",
-      spinner: "border-gray-600 border-t-white",
+      bar: "bg-gradient-to-r from-gray-200 to-white",
+      track: "bg-gray-600",
       text: "text-white",
       subtext: "text-gray-200",
+      glow: "shadow-[0_0_8px_rgba(255,255,255,0.5)]",
     },
   };
 
   const currentVariant = variantClasses[variant] || variantClasses.blue;
+  const currentSize = sizeClasses[size] || sizeClasses.medium;
+
+  const ProgressBar = () => (
+    <div className={`relative ${currentSize.container}`}>
+      <div
+        className={`absolute top-0 left-0 ${currentSize.barHeight} ${currentVariant.track} rounded-full w-full`}
+      />
+      <div
+        className={`absolute top-0 left-0 ${currentSize.barHeight} ${currentVariant.bar} ${currentVariant.glow} rounded-full transition-all duration-[4000ms] ease-[cubic-bezier(0.4,0,0.2,1)]`}
+        style={{ width: `${progress}%` }}
+      />
+    </div>
+  );
 
   return (
     <div
@@ -83,7 +128,6 @@ export default function LoadingOverlay({
       }`}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Main content - no box, just centered content */}
       <div
         className={`transform transition-all duration-500 text-center ${
           isVisible
@@ -91,31 +135,25 @@ export default function LoadingOverlay({
             : "scale-95 translate-y-4 opacity-0"
         }`}
       >
-        {/* Spinner or Custom Icon */}
         <div className="flex justify-center mb-4">
           {customIcon ? (
             <div className="animate-pulse">{customIcon}</div>
           ) : showSpinner ? (
-            <div
-              className={`${sizeClasses[size]} ${currentVariant.spinner} rounded-full animate-spin`}
-            ></div>
+            <ProgressBar />
           ) : null}
         </div>
 
-        {/* Main message */}
         <div className={`text-lg font-medium ${currentVariant.text} mb-1`}>
           {message}
           {showDots && dots}
         </div>
 
-        {/* Submessage */}
         {submessage && (
           <div className={`text-sm ${currentVariant.subtext} mb-6`}>
             {submessage}
           </div>
         )}
 
-        {/* Cancel button if provided */}
         {onCancel && (
           <button
             onClick={onCancel}
@@ -128,4 +166,3 @@ export default function LoadingOverlay({
     </div>
   );
 }
-
