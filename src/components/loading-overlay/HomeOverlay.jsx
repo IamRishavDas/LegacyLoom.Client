@@ -13,7 +13,6 @@ export default function HomeOverlay({
 }) {
   if (!isVisible) return null;
 
-  const letters = "Legacy Loom".split("");
     
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
@@ -21,25 +20,7 @@ export default function HomeOverlay({
         {/* Animated Legacy Loom text */}
         <div className="mb-6 flex justify-center items-center">
           <div className="flex text-4xl font-bold text-gray-800">
-            {letters.map((letter, index) => {
-              const isSpace = letter === " ";
-              if (isSpace) {
-                return <div key={index} className="w-3"></div>;
-              }
-              
-              return (
-                <span
-                  key={index}
-                  className="inline-block animate-bounce"
-                  style={{
-                    animationDelay: `${index * 0.1}s`,
-                    animationDuration: '1s'
-                  }}
-                >
-                  {letter}
-                </span>
-              );
-            })}
+            Legacy Loom
           </div>
         </div>
 
