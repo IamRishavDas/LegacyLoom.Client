@@ -6,6 +6,7 @@ const URLS = {
     LOGIN_USERNAME: `${API_BASE_URL}/auth/login/username`,
     LOGIN_EMAIL: `${API_BASE_URL}/auth/login/email`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
+
     CREATE_TIMELINE: `${API_BASE_URL}/timelines`,
     GET_MY_TIMELINES: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/timelines/my-timelines?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`,
     GET_MY_TIMELINE_BY_ID: (id) => `${API_BASE_URL}/timelines/my-timelines/${id}`,
@@ -19,7 +20,11 @@ const URLS = {
     GET_MY_DRAFTS: (pageNumber, pageSize, orderBy) => `${API_BASE_URL}/drafts?PageNumber=${pageNumber ?? 1}&PageSize=${pageSize ?? 10}&OrderBy=${orderBy ?? "lastModified desc"}`,
     GET_MY_DRAFT_BY_ID: (id) => `${API_BASE_URL}/drafts/${id}`,
     DELETE_DRAFT: (id) => `${API_BASE_URL}/drafts/${id}`,
-    UPDATE_DRAFT: (id) => `${API_BASE_URL}/drafts/${id}`
+    UPDATE_DRAFT: (id) => `${API_BASE_URL}/drafts/${id}`,
+
+    FORGOT_PASSWORD: `${API_BASE_URL}/users/forgot-password`,
+    VALIDATE_OTP: `${API_BASE_URL}/users/forgot-password/validate`,
+    RESET_PASSWORD: `${API_BASE_URL}/users/reset-password`,
 }
 
 export default URLS;

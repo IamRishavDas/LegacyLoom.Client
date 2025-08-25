@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LoginUsingEmail, LoginUsingUsername } from '../../apis/apicalls/apicalls';
 import { toast } from 'react-toastify';
-import { Eye, EyeOff } from 'lucide-react'; // Import Lucide React eye icons
+import { Eye, EyeOff } from 'lucide-react';
 import LoadingOverlay from '../loading-overlay/LoadingOverlay';
 
 export default function UserLoginPage() {
@@ -18,7 +18,7 @@ export default function UserLoginPage() {
     });
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
-    const [showPassword, setShowPassword] = useState(false); // State for password visibility
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -78,7 +78,7 @@ export default function UserLoginPage() {
         setFormData({ username: '', email: '', password: '' });
         setErrors({});
         setTouched({});
-        setShowPassword(false); // Reset password visibility on login type change
+        setShowPassword(false);
     };
 
     const saveCredentialsToLocalStorage = (data) => {
@@ -234,6 +234,13 @@ export default function UserLoginPage() {
                                 {errors.password && touched.password && (
                                     <p className="mt-2 text-sm text-red-600 animate-pulse">{errors.password}</p>
                                 )}
+                                <div className="text-right mt-2">
+                                    <Link to="/forgot-password">
+                                        <button className="text-sm text-stone-600 hover:text-stone-800 font-medium transition-all duration-200 hover:underline focus:outline-none cursor-pointer">
+                                            Forgot Password?
+                                        </button>
+                                    </Link>
+                                </div>
                             </div>
 
                             <div
@@ -258,7 +265,7 @@ export default function UserLoginPage() {
                         <div className="mt-8 text-center">
                             <p className="text-sm text-stone-500">
                                 Don't have an account?{' '}
-                                <Link to={"/register"}>
+                                <Link to="/register">
                                     <button className="text-stone-600 hover:text-stone-800 font-medium transition-colors duration-200 cursor-pointer">
                                         Create one here
                                     </button>

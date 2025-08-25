@@ -10,6 +10,7 @@ import PublicFeed from './dashboard-content/PublicFeed';
 import { GetPublicFeed } from '../../apis/apicalls/apicalls';
 import { toast } from 'react-toastify';
 import LoadingOverlay from '../loading-overlay/LoadingOverlay';
+import HomeOverlay from '../loading-overlay/HomeOverlay';
 
 export default function DashboardHome() {
   const navigate = useNavigate();
@@ -211,7 +212,7 @@ export default function DashboardHome() {
         )}
       </div>
       {isLoading && (
-        <LoadingOverlay
+        <HomeOverlay
           isVisible={isLoading}
           message="Loading timelines"
           submessage="Please wait while we load timelines"

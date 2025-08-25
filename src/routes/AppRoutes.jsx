@@ -13,6 +13,9 @@ import MyTimeline from '../components/dashboard/my-timelines/MyTimeline'
 import PublicTimeline from '../components/dashboard/dashboard-content/PublicTimeline'
 import Drafts from '../components/dashboard/drafts/Drafts'
 import Draft from '../components/dashboard/drafts/Draft'
+import ForgotPasswordPage from '../components/forgot-password/ForgotPasswordPage'
+import OTPVerificationPage from '../components/forgot-password/OTPVerificationPage'
+import ChangePasswordPage from '../components/forgot-password/ChangePasswordPage'
 
 function AppRoutes() {
   return (
@@ -33,6 +36,10 @@ function AppRoutes() {
             <Route path='/drafts' element={<Drafts/>}/>
             <Route path='/drafts/:id' element={<Draft/>}/>
           </Route>
+
+          <Route path='/forgot-password' element={<ForgotPasswordPage/>}/>
+          <Route path='/change-password' element={<ChangePasswordPage/>}/>
+          <Route path='/otp-validation' element={<OTPVerificationPage/>}/>
           <Route path='/not-found' element={<NotFound/>}/>
           <Route path='/not-authorized' element={<UnauthorizedPage/>}/>
           <Route path='*' element={<NotFound/>}/>

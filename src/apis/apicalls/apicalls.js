@@ -198,3 +198,43 @@ export const UpdateDraft = async (draftId, formData, authToken) => {
   });
   return response;
 }
+
+export const RequestForgotPasswordOTP = async (userNameOrEmail) => {
+  const response = await fetch(`${URLS.FORGOT_PASSWORD}`,{
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userNameOrEmail),
+  });
+  return response;
+}
+
+export const ValidateOTP = async (userNameOrEmail, otp) => {
+  const response = await fetch(`${URLS.VALIDATE_OTP}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userNameOrEmail: userNameOrEmail,
+        otp: otp,
+      }),
+    });
+  return response;
+}
+
+export const ChangePassword = async (authToken, userId, newPassword) => {
+  const response = await fetch(`${URLS.RESET_PASSWORD}`, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({
+      userId: userId,
+      password: newPassword,
+    }),
+  });
+  return response;
+}

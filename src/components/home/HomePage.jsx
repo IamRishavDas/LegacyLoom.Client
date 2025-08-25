@@ -1,5 +1,4 @@
 import HomeContent from './HomeContent';
-import HomeNav from './HomeNav';
 import SnowflakeAnimation, { SnowflakePresets } from '../animations/SnowflakeAnimation';
 
 
