@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import BackendNoticeModal from '../notices/BackendNoticeModal';
 
 export default function HomeContent() {
     const heroRef = useRef(null);
@@ -14,6 +15,9 @@ export default function HomeContent() {
 
     return (
         <section ref={heroRef} className="pt-28 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex">
+
+            {/* notices */}
+            <BackendNoticeModal isOpen={true}/>
 
             {/* Background Image with Cut Paper Effect */}
             <div className="absolute inset-0 pointer-events-none z-10">
