@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GetMyTimelineById, GetPublicTimelineById } from "../../../apis/apicalls/apicalls";
+import { GetPublicTimelineById } from "../../../apis/apicalls/apicalls";
 import LoadingOverlay from "../../loading-overlay/LoadingOverlay";
-import { Clock, Eye } from "lucide-react";
+import { Clock, Download, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import ImageModal from "../../modals/ImageModal";
-import { renderPreview } from "../../../utils/Utils";
+import { escapeJsonString, renderPreview } from "../../../utils/Utils";
 
 export default function PublicTimeline() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false); // New state for download button
   const [story, setStory] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -25,7 +26,6 @@ export default function PublicTimeline() {
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-
   const openImageModal = (index) => {
     setSelectedImageIndex(index);
     setIsModalOpen(true);
@@ -35,6 +35,90 @@ export default function PublicTimeline() {
     setIsModalOpen(false);
   };
 
+  const handleDownloadVoiceover = async () => {
+    if (!story?.storyDTO?.title || !story?.storyDTO?.content) {
+      toast.error("Story title or content is missing");
+      return;
+    }
+
+    setIsDownloading(true); // Set download button loading state
+    const authToken = localStorage.getItem("token");
+
+    if (!authToken) {
+      setIsDownloading(false);
+      navigate("/user-login");
+      toast.warn("Login to download voiceover");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://legacyloomaispring-hrfzh2a4eeb3fsdm.canadacentral-01.azurewebsites.net/api/tts/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          title: escapeJsonString(story.storyDTO.title),
+          content: escapeJsonString(story.storyDTO.content),
+        }),
+      });
+
+      if (response.status === 429) {
+        toast.warn("Too many requests. Please try again later.");
+        setIsDownloading(false);
+        return;
+      }
+
+      if (response.status === 401) {
+        toast.warn("Login to download voiceover");
+        navigate("/user-login");
+        setIsDownloading(false);
+        return;
+      }
+
+      if (response.status === 400) {
+        toast.error("Invalid story data. Please check title and content.");
+        setIsDownloading(false);
+        return;
+      }
+
+      if (response.status === 503) {
+        toast.error("Text-to-speech service unavailable. Try again later.");
+        setIsDownloading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        toast.error("Failed to generate voiceover");
+        setIsDownloading(false);
+        return;
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("Content-Disposition");
+      const filename = disposition
+        ? disposition.match(/filename="(.+)"/)?.[1] || "narration.wav"
+        : `${escapeJsonString(story.storyDTO.title).replace(/[^a-zA-Z0-9]/g, "_")}_narration.wav`;
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Voiceover downloaded successfully");
+    } catch (error) {
+      console.error("Error generating voiceover:", error);
+      toast.error("Network error: Please check your connection or try again later");
+    } finally {
+      setIsDownloading(false); // Reset download button loading state
+    }
+  };
+
   useEffect(() => {
     const getData = async () => {
       if (isLoading) return;
@@ -42,7 +126,7 @@ export default function PublicTimeline() {
       
       setIsLoading(true);
       
-      if(authToken === null){
+      if (authToken === null) {
         setIsLoading(false);
         navigate("/user-login");
         toast.warn("Login to access this page");
@@ -52,7 +136,7 @@ export default function PublicTimeline() {
       try {
         const response = await GetPublicTimelineById(authToken, id);
 
-        if(response.status === 429){
+        if (response.status === 429) {
           toast.warn("Too many requests are made");
           return;
         }
@@ -70,7 +154,6 @@ export default function PublicTimeline() {
           toast.error(data.errorMessage || "Failed to load story");
         }
       } catch (error) {
-        // console.error("Error fetching timeline:", error);
         toast.error("Network error: Please check your network connection or try again later");
       } finally {
         setIsLoading(false);
@@ -116,17 +199,39 @@ export default function PublicTimeline() {
     <section>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
-          {/* Back Button */}
-          <button
-            style={{ cursor: "pointer" }}
-            onClick={() => window.history.back()}
-            className="mb-8 flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span>Back to Stories</span>
-          </button>
+          {/* Back Button and Download Button */}
+          <div className="mb-8 flex justify-between items-center">
+            <button
+              style={{ cursor: "pointer" }}
+              onClick={() => window.history.back()}
+              className="flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Back to Stories</span>
+            </button>
+            <button
+              style={{ cursor: isDownloading ? "not-allowed" : "pointer" }}
+              onClick={handleDownloadVoiceover}
+              disabled={isDownloading}
+              className={`flex items-center space-x-2 text-stone-600 hover:text-stone-800 transition-colors duration-200 bg-white/90 rounded-lg px-4 py-2 shadow-md ${
+                isDownloading ? "opacity-50" : ""
+              }`}
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Downloading...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={16} />
+                  <span>Download Voiceover</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {/* Story Detail */}
           <article className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-stone-200/50">
@@ -136,9 +241,6 @@ export default function PublicTimeline() {
                   <div className="flex items-center text-stone-500 space-x-3">
                     <Clock size={16} />
                     <span>{formatDate(story.createdAt)}</span>
-                    {/* <span>•</span>
-                    <Eye size={16} />
-                    <span>{story.visibility.toLowerCase()}</span> */}
                   </div>
                 </div>
               </div>

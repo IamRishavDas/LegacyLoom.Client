@@ -9,3 +9,18 @@ export const renderPreview = (text) => {
 
     return rendered.replace(/\n/g, '<br>');
   };
+
+export const escapeJsonString = (input) => {
+  if (typeof input !== 'string') {
+    return String(input); // Convert non-string inputs to string
+  }
+
+  return input
+    .replace(/\\/g, '\\\\') // Escape backslashes
+    .replace(/"/g, '\\"')   // Escape double quotes
+    .replace(/\n/g, '\\n')  // Escape newlines
+    .replace(/\r/g, '\\r')  // Escape carriage returns
+    .replace(/\t/g, '\\t')  // Escape tabs
+    .replace(/\f/g, '\\f')  // Escape form feeds
+    .replace(/\b/g, '\\b'); // Escape backspaces
+}
